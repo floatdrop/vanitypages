@@ -232,7 +232,6 @@ body.g-root {
 }
 
 .vp-modules .vp-row__name {
-  flex: 0 0 9rem;
   font: var(--g-text-subheader-3-font);
 }
 
