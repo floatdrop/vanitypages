@@ -55,6 +55,9 @@ type Config struct {
 	// Modules are the modules served from Domain, listed in this order on
 	// the index page.
 	Modules []Module `json:"modules"`
+	// Details adds published versions, licenses and synopses to the pages. It
+	// isn't part of the config file; [Config.FetchDetails] provides it.
+	Details Details `json:"-"`
 }
 
 // Module is a Go module whose root is the root of a repository.

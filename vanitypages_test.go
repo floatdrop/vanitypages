@@ -545,6 +545,9 @@ func TestSchemaMatchesConfig(t *testing.T) {
 		var fields, required []string
 		for field := range tt.typ.Fields() {
 			name, opts, _ := strings.Cut(field.Tag.Get("json"), ",")
+			if name == "-" {
+				continue
+			}
 			fields = append(fields, name)
 			if opts == "" {
 				required = append(required, name)

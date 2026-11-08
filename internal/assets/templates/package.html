@@ -22,6 +22,17 @@
     {{- if .Description}}
     <p class="g-text g-text_variant_body-2 g-color-text g-color-text_color_secondary">{{.Description}}</p>
     {{- end}}
+    {{- if .Detail.Version}}
+    <p class="vp-meta g-text g-text_variant_body-1 g-color-text g-color-text_color_secondary">
+      <span>Version: <a class="g-link g-link_view_normal" href="{{.Docs}}?tab=versions">{{.Detail.Version}}</a></span>
+      {{- if not .Detail.Published.IsZero}}
+      <span>Published: {{.Detail.Published.UTC.Format "Jan 2, 2006"}}</span>
+      {{- end}}
+      {{- if .Detail.License}}
+      <span>License: <a class="g-link g-link_view_normal" href="{{.Docs}}?tab=licenses">{{.Detail.License}}</a></span>
+      {{- end}}
+    </p>
+    {{- end}}
     <div class="vp-actions">
       <a class="g-button g-button_view_action g-button_size_l g-button_pin_round-round" href="{{.Docs}}">
         <span class="g-button__icon g-button__icon_side_start"><span class="g-button__icon-inner">{{template "icon-book-open"}}</span></span>

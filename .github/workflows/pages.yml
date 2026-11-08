@@ -3,6 +3,8 @@ name: Pages
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "23 4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -26,7 +28,7 @@ jobs:
         with:
           go-version-file: go.mod
       - run: go test ./...
-      - run: go run ./cmd/vanitypages
+      - run: go run ./cmd/vanitypages -details
       - uses: actions/upload-pages-artifact@v5
         with:
           path: public

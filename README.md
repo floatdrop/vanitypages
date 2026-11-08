@@ -42,15 +42,21 @@ validation in editors:
 
 Run `vanitypages` to write the site to `public/`.
 
-| Flag       | Default            | Description                           |
-| ---------- | ------------------ | ------------------------------------- |
-| `-config`  | `vanitypages.json` | Path to the config file               |
-| `-out`     | `public`           | Directory to write the site to        |
-| `-schema`  |                    | Print the config JSON Schema and exit |
-| `-version` |                    | Print the version and exit            |
+| Flag       | Default            | Description                                 |
+| ---------- | ------------------ | ------------------------------------------- |
+| `-config`  | `vanitypages.json` | Path to the config file                     |
+| `-out`     | `public`           | Directory to write the site to              |
+| `-details` |                    | Add published details from the docs site    |
+| `-schema`  |                    | Print the config JSON Schema and exit       |
+| `-version` |                    | Print the version and exit                  |
 
 Generating overwrites earlier output but never deletes files, so clean the
 output directory if you remove a module from the config.
+
+With `-details`, pages show the latest version, publish date and license from
+the API of the documentation site, and its synopses fill in missing
+descriptions. If the site can't be reached, the build prints a warning and the
+pages go without them. Rebuild regularly to keep the details current.
 
 ## Configuration
 
@@ -109,12 +115,14 @@ if err := site.Generate("public"); err != nil {
 ```
 
 `Config.Render` returns the files in memory instead, and `vanitypages.Load`
-reads a JSON config file.
+reads a JSON config file. Assign the result of `Config.FetchDetails` to
+`Config.Details` to get what `-details` adds.
 
 ## Deployment
 
 `.github/workflows/pages.yml` builds `vanitypages.json` from this repository and
-deploys it to GitHub Pages on every push to `main`.
+deploys it to GitHub Pages on every push to `main` and once a day, which picks
+up new releases.
 
 ## Third-party assets
 

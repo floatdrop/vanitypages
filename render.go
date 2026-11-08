@@ -106,6 +106,7 @@ type site struct {
 	Title       string
 	Description string
 	docs        string
+	details     Details
 }
 
 func newSite(c Config) site {
@@ -119,7 +120,13 @@ func newSite(c Config) site {
 		Title:       cmp.Or(c.Title, c.Domain),
 		Description: c.Description,
 		docs:        strings.TrimRight(cmp.Or(c.Docs, defaultDocs), "/"),
+		details:     c.Details,
 	}
+}
+
+// synopsis returns the published synopsis of a site-relative path, if any.
+func (s site) synopsis(path string) string {
+	return s.details[s.Domain+"/"+path].Synopsis
 }
 
 func (s site) home() crumb {
@@ -161,7 +168,7 @@ func (s site) indexPage(modules []Module) indexPage {
 		page.Modules = append(page.Modules, childLink{
 			Name:        m.Path,
 			Href:        s.href(m.Path),
-			Description: m.Description,
+			Description: cmp.Or(m.Description, s.synopsis(advertised(m))),
 			Labels:      labels,
 		})
 	}
@@ -179,6 +186,14 @@ func vcsBadge(m Module) string {
 
 func latestVersion(versions []string) string {
 	return slices.MaxFunc(versions, semver.Compare)
+}
+
+// advertised returns the path to install m from: its newest major version.
+func advertised(m Module) string {
+	if len(m.Versions) == 0 {
+		return m.Path
+	}
+	return m.Path + "/" + latestVersion(m.Versions)
 }
 
 func count(n int, noun string) string {
@@ -200,6 +215,7 @@ type packagePage struct {
 	GoImport    string
 	GoSource    string
 	Description string
+	Detail      Detail // zero if the path has no published details
 	Docs        string
 	Browse      string // link to this path in a source browser
 	OnGitHub    bool   // Browse points at github.com
@@ -306,18 +322,15 @@ func (s site) modulePages(m Module) []packagePage {
 	repo := s.repository(m)
 	moduleTrail := []crumb{s.home(), {Label: m.Path, Href: s.href(m.Path)}}
 
-	root := pageSpec{
+	specs := []pageSpec{{
 		kind:        "module",
 		path:        m.Path,
+		install:     advertised(m),
 		description: m.Description,
 		trail:       moduleTrail,
 		submodules:  m.Submodules,
 		packages:    m.Packages,
-	}
-	if len(m.Versions) > 0 {
-		root.install = m.Path + "/" + latestVersion(m.Versions)
-	}
-	specs := []pageSpec{root}
+	}}
 	for _, version := range m.Versions {
 		path := m.Path + "/" + version
 		specs = append(specs, pageSpec{
@@ -366,6 +379,7 @@ func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 	last := len(spec.trail) - 1
 	install := s.Domain + "/" + cmp.Or(spec.install, spec.path)
 	browse := repo.browse(cmp.Or(spec.browsePath, spec.path))
+	detail := s.details[install]
 	page := packagePage{
 		Site:        s,
 		Kind:        spec.kind,
@@ -373,7 +387,8 @@ func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 		Install:     install,
 		GoImport:    repo.goImport,
 		GoSource:    repo.goSource,
-		Description: spec.description,
+		Description: cmp.Or(spec.description, detail.Synopsis),
+		Detail:      detail,
 		Docs:        s.docs + "/" + install,
 		Browse:      browse,
 		OnGitHub:    onGitHub(browse),
@@ -385,14 +400,16 @@ func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 		path:        spec.path,
 	}
 	for _, sub := range spec.submodules {
+		path := spec.path + "/" + sub.Path
 		page.Submodules = append(page.Submodules, childLink{
 			Name:        sub.Path,
-			Description: sub.Description,
-			Href:        s.href(spec.path + "/" + sub.Path),
+			Description: cmp.Or(sub.Description, s.synopsis(path)),
+			Href:        s.href(path),
 		})
 	}
 	for _, p := range spec.packages {
-		page.Packages = append(page.Packages, childLink{Name: p, Href: s.href(spec.path + "/" + p)})
+		path := spec.path + "/" + p
+		page.Packages = append(page.Packages, childLink{Name: p, Description: s.synopsis(path), Href: s.href(path)})
 	}
 	return page
 }
