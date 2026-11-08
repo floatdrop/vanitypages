@@ -5,7 +5,7 @@
 <script src="{{.Site.Base}}/-/vanitypages.js" defer></script>{{end}}
 
 {{define "body-start"}}<body class="g-root g-root_theme_light">
-<script>(function(){var t,v;try{t=localStorage.getItem("vanitypages-theme");v=localStorage.getItem("vanitypages-view")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.body.className="g-root g-root_theme_"+t+" vp-js"+(v==="list"?" vp-view-list":"")})()</script>
+<script>(function(){var t;try{t=localStorage.getItem("vanitypages-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.body.className="g-root g-root_theme_"+t+" vp-js"})()</script>
 <div class="vp-page">
 <header class="vp-header">
   <div class="vp-container vp-header__inner">
@@ -44,6 +44,7 @@
   <li><a class="vp-row" href="{{.Href}}">
     <span class="g-text g-text_variant_code-1 vp-row__name">{{.Name}}</span>
     {{- if .Description}}<span class="g-text g-text_variant_body-1 g-color-text g-color-text_color_secondary vp-row__text">{{.Description}}</span>{{end}}
+    {{- if .Labels}}<span class="vp-labels vp-row__labels">{{range .Labels}}{{template "label" .}}{{end}}</span>{{end}}
     <span class="g-color-text g-color-text_color_hint vp-row__chevron">{{template "icon-chevron-right"}}</span>
   </a></li>
   {{- end}}

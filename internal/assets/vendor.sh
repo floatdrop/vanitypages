@@ -27,13 +27,13 @@ components="$tmp/uikit/package/build/esm/components"
 	printf '/* Gravity UI uikit %s (MIT), see THIRD_PARTY_LICENSES.txt */\n' "$UIKIT"
 	awk '/^\.g-root_theme_(light|dark)-hc \{$/ {skip=1} !skip {print} skip && /^\}$/ {skip=0}' \
 		"$tmp/uikit/package/styles/styles.css"
-	for css in Button/Button Card/Card Icon/Icon Label/Label Link/Link SegmentedRadioGroup/SegmentedRadioGroup Text/text/text Text/colorText/colorText; do
+	for css in Button/Button Card/Card Icon/Icon Label/Label Link/Link Text/text/text Text/colorText/colorText; do
 		cat "$components/$css.css"
 		echo
 	done
 } | grep -v -e '^@charset' -e 'sourceMappingURL' >gravity.gen.css
 
-for icon in arrow-up-right-from-square book-open check chevron-right code copy cube layout-cells-large list-ul logo-github moon sun; do
+for icon in arrow-up-right-from-square book-open check chevron-right code copy cube logo-github moon sun; do
 	printf '{{define "icon-%s"}}' "$icon"
 	sed 's/<svg /<svg class="g-icon" aria-hidden="true" /' "$tmp/icons/package/svgs/$icon.svg" | tr -d '\n'
 	printf '{{end}}\n'

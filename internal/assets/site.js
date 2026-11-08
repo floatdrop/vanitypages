@@ -13,27 +13,6 @@
     }
   });
 
-  const viewSwitch = document.querySelector("[data-view-switch]");
-  if (viewSwitch) {
-    const syncViewSwitch = () => {
-      const view = body.classList.contains("vp-view-list") ? "list" : "cards";
-      for (const input of viewSwitch.querySelectorAll("input")) {
-        input.checked = input.value === view;
-        input.parentElement.classList.toggle("g-segmented-radio-group__option_checked", input.checked);
-      }
-    };
-    viewSwitch.addEventListener("change", (event) => {
-      body.classList.toggle("vp-view-list", event.target.value === "list");
-      try {
-        localStorage.setItem("vanitypages-view", event.target.value);
-      } catch {
-        // Storage can be unavailable; the choice just won't persist.
-      }
-      syncViewSwitch();
-    });
-    syncViewSwitch();
-  }
-
   for (const button of document.querySelectorAll("[data-copy]")) {
     let timer;
     button.addEventListener("click", async () => {

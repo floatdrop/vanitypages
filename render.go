@@ -136,14 +136,7 @@ func (s site) href(path string) string {
 type indexPage struct {
 	Site    site
 	Crumbs  []crumb
-	Modules []moduleCard
-}
-
-type moduleCard struct {
-	Name        string
-	Href        string
-	Description string
-	Labels      []string
+	Modules []childLink
 }
 
 func (s site) indexPage(modules []Module) indexPage {
@@ -165,7 +158,7 @@ func (s site) indexPage(modules []Module) indexPage {
 		if n := len(m.Packages); n > 0 {
 			labels = append(labels, count(n, "package"))
 		}
-		page.Modules = append(page.Modules, moduleCard{
+		page.Modules = append(page.Modules, childLink{
 			Name:        m.Path,
 			Href:        s.href(m.Path),
 			Description: m.Description,
@@ -232,6 +225,7 @@ type childLink struct {
 	Name        string
 	Description string
 	Href        string
+	Labels      []string
 }
 
 // repository holds what every page of a module shares.

@@ -229,10 +229,8 @@ func TestIndexListsModulesByRelativePath(t *testing.T) {
 	if strings.Contains(elementText(t, files["index.html"], "main"), cfg.Domain) {
 		t.Error("index repeats the title below the header")
 	}
-	for _, want := range []string{`>cache</span>`, "data-view-switch", `value="cards"`, `value="list"`} {
-		if !strings.Contains(index, want) {
-			t.Errorf("index is missing %q", want)
-		}
+	if !strings.Contains(index, `>cache</span>`) {
+		t.Error("index does not list the module by its relative path")
 	}
 }
 
