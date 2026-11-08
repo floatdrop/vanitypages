@@ -1,8 +1,9 @@
 # vanitypages
 
-Generates a static site of Go vanity import pages, styled with
-[Gravity UI](https://gravity-ui.com). Host the output anywhere that serves
-static files, and `go get your.domain/module` resolves to your repository.
+Generates a static site of Go vanity import pages, built with
+[Gravity UI](https://gravity-ui.com) and styled after go.dev. Host the output
+anywhere that serves static files, and `go get your.domain/module` resolves to
+your repository.
 
 ## Usage
 
@@ -108,6 +109,6 @@ deploys it to GitHub Pages on every push to `main`.
 
 ## Third-party assets
 
-Generated sites include Gravity UI styles and icons (MIT) and the Inter font
-(OFL), with licenses at `/-/THIRD_PARTY_LICENSES.txt`. To update them, change the
-versions in `internal/assets/vendor.sh` and run it.
+Generated sites include Gravity UI styles and icons (MIT), with licenses at
+`/-/THIRD_PARTY_LICENSES.txt`. To update them, change the versions in
+`internal/assets/vendor.sh` and run it.

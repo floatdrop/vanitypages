@@ -307,7 +307,7 @@ func (s site) modulePages(m Module) []packagePage {
 	moduleTrail := []crumb{s.home(), {Label: m.Path, Href: s.href(m.Path)}}
 
 	root := pageSpec{
-		kind:        "Module",
+		kind:        "module",
 		path:        m.Path,
 		description: m.Description,
 		trail:       moduleTrail,
@@ -321,7 +321,7 @@ func (s site) modulePages(m Module) []packagePage {
 	for _, version := range m.Versions {
 		path := m.Path + "/" + version
 		specs = append(specs, pageSpec{
-			kind:        "Module",
+			kind:        "module",
 			path:        path,
 			browsePath:  m.Path,
 			description: m.Description,
@@ -333,7 +333,7 @@ func (s site) modulePages(m Module) []packagePage {
 		path := m.Path + "/" + sub.Path
 		trail := append(slices.Clip(moduleTrail), crumb{Label: sub.Path, Href: s.href(path)})
 		specs = append(specs, pageSpec{
-			kind:        "Submodule",
+			kind:        "submodule",
 			path:        path,
 			description: sub.Description,
 			trail:       trail,
@@ -353,7 +353,7 @@ func appendPackages(specs []pageSpec, s site, owner string, trail []crumb, packa
 	for _, p := range packages {
 		path := owner + "/" + p
 		specs = append(specs, pageSpec{
-			kind:  "Package",
+			kind:  "package",
 			path:  path,
 			trail: append(slices.Clip(trail), crumb{Label: p, Href: s.href(path)}),
 		})

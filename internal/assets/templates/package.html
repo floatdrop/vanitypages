@@ -13,12 +13,14 @@
 {{template "head" .}}
 </head>
 {{template "body-start" .}}
-<main class="vp-container vp-main">
-  <section class="vp-hero">
-    <span class="vp-labels">{{template "label" .Kind}}{{if .VCSBadge}}{{template "label" .VCSBadge}}{{end}}</span>
-    <h1 class="vp-path g-text g-text_variant_display-1">{{.Current}}</h1>
+<main class="vp-main">
+  <section class="vp-container vp-hero">
+    <div class="vp-title">
+      <h1 class="vp-path g-text g-text_variant_header-2">{{.Current}}</h1>
+      <span class="vp-labels">{{template "label" .Kind}}{{if .VCSBadge}}{{template "label" .VCSBadge}}{{end}}</span>
+    </div>
     {{- if .Description}}
-    <p class="g-text g-text_variant_body-3 g-color-text g-color-text_color_secondary">{{.Description}}</p>
+    <p class="g-text g-text_variant_body-2 g-color-text g-color-text_color_secondary">{{.Description}}</p>
     {{- end}}
     <div class="vp-actions">
       <a class="g-button g-button_view_action g-button_size_l g-button_pin_round-round" href="{{.Docs}}">
@@ -34,31 +36,30 @@
     </div>
   </section>
 
-  <section class="vp-section" aria-label="Usage">
-    <h2 class="g-text g-text_variant_subheader-3">Install</h2>
-    {{template "snippet" (printf "go get %s" .Install)}}
-    <h2 class="g-text g-text_variant_subheader-3">Import</h2>
-    {{template "snippet" (printf "import %q" .Install)}}
+  <section class="vp-details" aria-label="Usage">
+    <dl class="vp-container vp-details__list">
+      <dt class="g-text g-text_variant_subheader-1">Install</dt>
+      <dd>{{template "snippet" (printf "go get %s" .Install)}}</dd>
+      <dt class="g-text g-text_variant_subheader-1">Import</dt>
+      <dd>{{template "snippet" (printf "import %q" .Install)}}</dd>
+      <dt class="g-text g-text_variant_subheader-1">Repository</dt>
+      <dd class="g-text g-text_variant_body-1">{{if .RepoHref}}<a class="g-link g-link_view_normal" href="{{.RepoHref}}">{{.Repo}}</a>{{else}}<code class="g-text g-text_variant_code-2">{{.Repo}}</code>{{end}}</dd>
+    </dl>
   </section>
 
   {{- if .Submodules}}
-  <section class="vp-section">
-    <h2 class="g-text g-text_variant_subheader-3">Submodules</h2>
+  <section class="vp-container vp-section">
+    <h2 class="g-text g-text_variant_header-1">Submodules</h2>
     {{template "children" .Submodules}}
   </section>
   {{- end}}
 
   {{- if .Packages}}
-  <section class="vp-section">
-    <h2 class="g-text g-text_variant_subheader-3">Packages</h2>
+  <section class="vp-container vp-section">
+    <h2 class="g-text g-text_variant_header-1">Packages</h2>
     {{template "children" .Packages}}
   </section>
   {{- end}}
-
-  <p class="g-text g-text_variant_body-1 g-color-text g-color-text_color_secondary vp-repo">
-    Repository:
-    {{if .RepoHref}}<a class="g-link g-link_view_normal" href="{{.RepoHref}}">{{.Repo}}</a>{{else}}<code class="g-text g-text_variant_code-1">{{.Repo}}</code>{{end}}
-  </p>
 </main>
 {{template "body-end" .}}
 </html>

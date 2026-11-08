@@ -123,7 +123,7 @@ func TestRenderSubmodulePage(t *testing.T) {
 
 	sub := string(files["cache/contrib/redis/index.html"])
 	for _, want := range []string{
-		">Submodule<",
+		">submodule<",
 		"go get go.example.com/cache/contrib/redis",
 		"https://pkg.go.dev/go.example.com/cache/contrib/redis",
 		"https://github.com/acme/cache/tree/HEAD/contrib/redis",

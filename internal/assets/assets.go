@@ -1,7 +1,7 @@
 // Package assets embeds the templates and shared files of generated sites.
 //
-// Files named *.gen.*, the fonts and THIRD_PARTY_LICENSES.txt come from npm
-// packages and are refreshed by vendor.sh.
+// Files named *.gen.* and THIRD_PARTY_LICENSES.txt come from npm packages and
+// are refreshed by vendor.sh.
 package assets
 
 import (
@@ -21,10 +21,6 @@ var (
 	siteCSS []byte
 	//go:embed site.js
 	siteJS []byte
-	//go:embed inter-latin.woff2
-	interLatin []byte
-	//go:embed inter-cyrillic.woff2
-	interCyrillic []byte
 	//go:embed THIRD_PARTY_LICENSES.txt
 	licenses []byte
 )
@@ -34,8 +30,6 @@ func Static() map[string][]byte {
 	return map[string][]byte{
 		"vanitypages.css":          slices.Concat(gravityCSS, siteCSS),
 		"vanitypages.js":           siteJS,
-		"inter-latin.woff2":        interLatin,
-		"inter-cyrillic.woff2":     interCyrillic,
 		"THIRD_PARTY_LICENSES.txt": licenses,
 	}
 }

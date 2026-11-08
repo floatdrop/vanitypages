@@ -9,12 +9,12 @@
 {{template "head" .}}
 </head>
 {{template "body-start" .}}
-<main class="vp-container vp-main">
+<main class="vp-main">
   {{- if .Site.Description}}
-  <p class="g-text g-text_variant_body-3 g-color-text g-color-text_color_secondary">{{.Site.Description}}</p>
+  <p class="vp-container g-text g-text_variant_body-2 g-color-text g-color-text_color_secondary">{{.Site.Description}}</p>
   {{- end}}
   {{- if .Modules}}
-  <section class="vp-modules" aria-label="Modules">
+  <section class="vp-container vp-modules" aria-label="Modules">
     {{template "children" .Modules}}
   </section>
   {{- end}}
