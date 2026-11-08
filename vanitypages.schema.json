@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/floatdrop/vanitypages/main/vanitypages.schema.json",
+  "title": "vanitypages configuration",
+  "description": "Configuration for the vanitypages static Go vanity import site generator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["domain", "modules"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this JSON Schema, used by editors."
+    },
+    "domain": {
+      "type": "string",
+      "description": "Host the site is served from, optionally with a path. Import paths start with this value.",
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(/[A-Za-z0-9_~-]([A-Za-z0-9._~-]*[A-Za-z0-9_~-])?)*$",
+      "examples": ["go.example.com", "example.com/go"]
+    },
+    "title": {
+      "type": "string",
+      "description": "Index page heading. Defaults to the domain."
+    },
+    "description": {
+      "type": "string",
+      "description": "Text shown under the index page heading."
+    },
+    "docs": {
+      "type": "string",
+      "description": "Base URL of the documentation site. Import paths are appended to it.",
+      "pattern": "^https?://\\S+$",
+      "default": "https://pkg.go.dev"
+    },
+    "modules": {
+      "type": "array",
+      "description": "Modules served from the domain, listed in this order on the index page.",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/module" }
+    }
+  },
+  "definitions": {
+    "relativePath": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_~-]([A-Za-z0-9._~-]*[A-Za-z0-9_~-])?(/[A-Za-z0-9_~-]([A-Za-z0-9._~-]*[A-Za-z0-9_~-])?)*$"
+    },
+    "packages": {
+      "type": "array",
+      "description": "Package paths inside the module, relative to its path, that should get a page of their own.",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/relativePath" }
+    },
+    "module": {
+      "type": "object",
+      "description": "A Go module whose root is the root of a repository.",
+      "additionalProperties": false,
+      "required": ["path", "repo"],
+      "properties": {
+        "path": {
+          "allOf": [
+            { "$ref": "#/definitions/relativePath" },
+            { "not": { "pattern": "^-(/|$)" } }
+          ],
+          "description": "Module path relative to the domain. The first element can't be \"-\", which is reserved for generated assets.",
+          "examples": ["foo", "tools/foo"]
+        },
+        "repo": {
+          "type": "string",
+          "description": "URL of the repository.",
+          "pattern": "^(?!file:)[a-z][a-z0-9+.-]*://\\S+$",
+          "examples": ["https://github.com/acme/foo"]
+        },
+        "vcs": {
+          "type": "string",
+          "description": "Version control system.",
+          "enum": ["git", "hg", "svn", "bzr", "fossil", "mod"],
+          "default": "git"
+        },
+        "description": {
+          "type": "string",
+          "description": "Text shown on the index and module pages."
+        },
+        "versions": {
+          "type": "array",
+          "description": "Major versions above v1 developed at the repository root, with a go.mod declaring the /vN module path. Each one gets a page, and the module's page advertises the newest. For a major version kept in its own directory, use a submodule.",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^v([2-9]|[1-9][0-9]+)$",
+            "examples": ["v2"]
+          }
+        },
+        "packages": { "$ref": "#/definitions/packages" },
+        "submodules": {
+          "type": "array",
+          "description": "Go modules with their own go.mod nested in this module's repository, tagged with their directory as a prefix, such as contrib/redis/v1.2.3.",
+          "items": { "$ref": "#/definitions/submodule" }
+        },
+        "source": { "$ref": "#/definitions/source" },
+        "hidden": {
+          "type": "boolean",
+          "description": "Keep the module off the index page. Its pages are still generated, so it remains importable.",
+          "default": false
+        }
+      }
+    },
+    "submodule": {
+      "type": "object",
+      "description": "A Go module nested in the parent module's repository.",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "allOf": [{ "$ref": "#/definitions/relativePath" }],
+          "description": "Path relative to the parent module. This is also the module's directory in the repository.",
+          "examples": ["contrib/redis", "v2"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Text shown on the parent module's page and on the submodule's own page."
+        },
+        "packages": { "$ref": "#/definitions/packages" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "description": "URL templates for source links. Detected automatically for repositories on github.com, gitlab.com, bitbucket.org and codeberg.org.",
+      "additionalProperties": false,
+      "required": ["home", "dir", "file"],
+      "properties": {
+        "home": {
+          "type": "string",
+          "description": "URL of the repository's home page.",
+          "pattern": "^https?://\\S+$"
+        },
+        "dir": {
+          "type": "string",
+          "description": "URL template of a directory. Placeholders: {dir}, {/dir}.",
+          "pattern": "^https?://\\S+$",
+          "examples": ["https://git.example.com/acme/foo/tree/main{/dir}"]
+        },
+        "file": {
+          "type": "string",
+          "description": "URL template of a file line. Placeholders: {dir}, {/dir}, {file}, {line}.",
+          "pattern": "^https?://\\S+$",
+          "examples": ["https://git.example.com/acme/foo/blob/main{/dir}/{file}#L{line}"]
+        }
+      }
+    }
+  }
+}

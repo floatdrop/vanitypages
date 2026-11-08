@@ -1,0 +1,33 @@
+{{define "index"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{.Site.Title}}</title>
+{{- if .Site.Description}}
+<meta name="description" content="{{.Site.Description}}">
+{{- end}}
+{{template "head" .}}
+</head>
+{{template "body-start" .}}
+<main class="vp-container vp-main">
+  <section class="vp-hero">
+    <h1 class="g-text g-text_variant_display-2">{{.Site.Title}}</h1>
+    {{- if .Site.Description}}
+    <p class="g-text g-text_variant_body-3 g-color-text g-color-text_color_secondary">{{.Site.Description}}</p>
+    {{- end}}
+  </section>
+  <section class="vp-grid" aria-label="Modules">
+    {{- range .Modules}}
+    <a class="g-card g-card_theme_normal g-card_type_action g-card_size_m g-card_clickable vp-card" href="{{.Href}}">
+      <span class="vp-path g-text g-text_variant_subheader-3"><span class="g-color-text g-color-text_color_hint">{{.Prefix}}</span>{{.Name}}</span>
+      {{- if .Description}}
+      <span class="g-text g-text_variant_body-2 g-color-text g-color-text_color_secondary vp-card__text">{{.Description}}</span>
+      {{- end}}
+      <span class="vp-labels">{{range .Labels}}{{template "label" .}}{{end}}</span>
+    </a>
+    {{- end}}
+  </section>
+</main>
+{{template "body-end" .}}
+</html>
+{{end}}

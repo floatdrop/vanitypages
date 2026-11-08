@@ -1,0 +1,33 @@
+{
+  "$schema": "./vanitypages.schema.json",
+  "domain": "golang.yandex",
+  "modules": [
+    {
+      "path": "hasql",
+      "repo": "https://github.com/yandex/go-hasql",
+      "description": "Go library for high availability SQL installations with clustering",
+      "versions": ["v2"]
+    },
+    {
+      "path": "linters",
+      "repo": "https://github.com/yandex/go-linters",
+      "description": "Yandex battle proven set on Go static analyzers"
+    },
+    {
+      "path": "confetti",
+      "repo": "https://github.com/yandex/confetti",
+      "description": "Go library to load config data from multiple various sources to custom targets"
+    },
+    {
+      "path": "di",
+      "repo": "https://github.com/yandex/di",
+      "description": "Go 1.27+ dependency injection library",
+      "submodules": [
+        {
+          "path": "digrpc",
+          "description": "google.golang.org/grpc on a golang.yandex/di scope"
+        }
+      ]
+    }
+  ]
+}
