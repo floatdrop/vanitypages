@@ -233,6 +233,31 @@ func TestIndexListsModulesByRelativePath(t *testing.T) {
 	}
 }
 
+func TestVCSBadgeOnlyForNonGit(t *testing.T) {
+	for _, tt := range []struct {
+		vcs   string
+		badge string
+		shown bool
+	}{
+		{"", ">git<", false},
+		{"git", ">git<", false},
+		{"hg", ">hg<", true},
+	} {
+		cfg := Config{Domain: "example.com", Modules: []Module{{
+			Path: "m", Repo: "https://hg.example.org/m", VCS: tt.vcs,
+		}}}
+		files, err := cfg.Render()
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, name := range []string{"index.html", "m/index.html"} {
+			if got := strings.Contains(string(files[name]), tt.badge); got != tt.shown {
+				t.Errorf("vcs %q: %s shows %s = %v, want %v", tt.vcs, name, tt.badge, got, tt.shown)
+			}
+		}
+	}
+}
+
 func TestRenderMajorVersions(t *testing.T) {
 	cfg := Config{Domain: "example.com", Modules: []Module{{
 		Path:     "m",

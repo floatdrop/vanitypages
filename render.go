@@ -155,7 +155,10 @@ func (s site) indexPage(modules []Module) indexPage {
 		if m.Hidden {
 			continue
 		}
-		labels := []string{cmp.Or(m.VCS, defaultVCS)}
+		var labels []string
+		if badge := vcsBadge(m); badge != "" {
+			labels = append(labels, badge)
+		}
 		if len(m.Versions) > 0 {
 			labels = append(labels, latestVersion(m.Versions))
 		}
@@ -173,6 +176,15 @@ func (s site) indexPage(modules []Module) indexPage {
 		})
 	}
 	return page
+}
+
+// vcsBadge returns the version control label to show for m. Git is the norm,
+// so it gets none.
+func vcsBadge(m Module) string {
+	if m.VCS == defaultVCS {
+		return ""
+	}
+	return m.VCS
 }
 
 func latestVersion(versions []string) string {
@@ -203,7 +215,7 @@ type packagePage struct {
 	OnGitHub    bool   // Browse points at github.com
 	Repo        string // repository URL without its scheme
 	RepoHref    string // repository URL, if browsers can open it
-	VCS         string
+	VCSBadge    string
 	Crumbs      []crumb // ancestors, starting at the site root
 	Current     string  // page heading: the path relative to its parent crumb
 	Submodules  []childLink
@@ -228,19 +240,18 @@ type repository struct {
 	root     string // site-relative path of the repository root
 	goImport string
 	goSource string
-	vcs      string
+	badge    string
 	display  string
 	href     string
 	source   *Source
 }
 
 func (s site) repository(m Module) repository {
-	vcs := cmp.Or(m.VCS, defaultVCS)
 	importRoot := s.Domain + "/" + m.Path
 	r := repository{
 		root:     m.Path,
-		goImport: strings.Join([]string{importRoot, vcs, m.Repo}, " "),
-		vcs:      vcs,
+		goImport: strings.Join([]string{importRoot, cmp.Or(m.VCS, defaultVCS), m.Repo}, " "),
+		badge:    vcsBadge(m),
 		display:  m.Repo,
 		source:   m.Source,
 	}
@@ -375,7 +386,7 @@ func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 		OnGitHub:    onGitHub(browse),
 		Repo:        repo.display,
 		RepoHref:    repo.href,
-		VCS:         repo.vcs,
+		VCSBadge:    repo.badge,
 		Crumbs:      spec.trail[:last],
 		Current:     spec.trail[last].Label,
 		path:        spec.path,

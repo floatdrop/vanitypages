@@ -177,6 +177,10 @@ body.g-root {
   padding-top: var(--g-spacing-2);
 }
 
+.vp-card .vp-labels:empty {
+  display: none;
+}
+
 .vp-card__chevron {
   display: none;
 }
@@ -230,6 +234,7 @@ body.g-root {
 }
 
 .vp-view-list .vp-card .vp-labels {
+  display: flex;
   flex: none;
   margin-inline-start: auto;
   margin-top: 0;
