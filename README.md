@@ -5,6 +5,15 @@ Generates a static site of Go vanity import pages, built with
 anywhere that serves static files, and `go get your.domain/module` resolves to
 your repository.
 
+## Gallery
+
+|               | Light                                                                     | Dark                                                                     |
+| ------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Index**     | ![Index page listing modules](docs/screenshots/index-light.png)           | ![Index page in the dark theme](docs/screenshots/index-dark.png)         |
+| **Module**    | ![Module page with install details](docs/screenshots/module-light.png)    | ![Module page in the dark theme](docs/screenshots/module-dark.png)       |
+| **Submodule** | ![Submodule page](docs/screenshots/submodule-light.png)                   | ![Submodule page in the dark theme](docs/screenshots/submodule-dark.png) |
+| **Phone**     | <img src="docs/screenshots/phone-light.png" width="220" alt="Index page on a phone"> | <img src="docs/screenshots/phone-dark.png" width="220" alt="Module page on a phone in the dark theme"> |
+
 ## Usage
 
 ```sh
