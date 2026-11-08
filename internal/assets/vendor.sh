@@ -33,7 +33,7 @@ components="$tmp/uikit/package/build/esm/components"
 	done
 } | grep -v -e '^@charset' -e 'sourceMappingURL' >gravity.gen.css
 
-for icon in arrow-up-right-from-square book-open check chevron-right code copy cube moon sun; do
+for icon in arrow-up-right-from-square book-open check chevron-right code copy cube logo-github moon sun; do
 	printf '{{define "icon-%s"}}' "$icon"
 	sed 's/<svg /<svg class="g-icon" aria-hidden="true" /' "$tmp/icons/package/svgs/$icon.svg" | tr -d '\n'
 	printf '{{end}}\n'

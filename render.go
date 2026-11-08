@@ -202,6 +202,7 @@ type packagePage struct {
 	Description string
 	Docs        string
 	Browse      string // link to this path in a source browser
+	OnGitHub    bool   // Browse points at github.com
 	Repo        string // repository URL without its scheme
 	RepoHref    string // repository URL, if browsers can open it
 	VCS         string
@@ -268,6 +269,11 @@ func detectSource(repo *url.URL) *Source {
 	}
 	home := "https://" + host + strings.TrimSuffix(strings.TrimRight(repo.Path, "/"), ".git")
 	return &Source{Home: home, Dir: home + forge.dir, File: home + forge.file}
+}
+
+func onGitHub(link string) bool {
+	u, err := url.Parse(link)
+	return err == nil && strings.EqualFold(u.Hostname(), "github.com")
 }
 
 // browse returns a link to the directory at the given site-relative path.
@@ -357,6 +363,7 @@ func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 	importPath := s.Domain + "/" + spec.path
 	last := len(spec.trail) - 1
 	install := s.Domain + "/" + cmp.Or(spec.install, spec.path)
+	browse := repo.browse(cmp.Or(spec.browsePath, spec.path))
 	page := packagePage{
 		Site:        s,
 		Kind:        spec.kind,
@@ -366,7 +373,8 @@ func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 		GoSource:    repo.goSource,
 		Description: spec.description,
 		Docs:        s.docs + "/" + install,
-		Browse:      repo.browse(cmp.Or(spec.browsePath, spec.path)),
+		Browse:      browse,
+		OnGitHub:    onGitHub(browse),
 		Repo:        repo.display,
 		RepoHref:    repo.href,
 		VCS:         repo.vcs,

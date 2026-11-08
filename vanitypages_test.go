@@ -276,12 +276,22 @@ func TestSource(t *testing.T) {
 		source       *Source
 		wantGoSource string
 		wantBrowse   string
+		wantGitHub   bool
 	}{
 		{
 			name:         "strips .git and normalizes ssh",
 			repo:         "ssh://git@github.com/acme/m.git",
 			wantGoSource: "example.com/m https://github.com/acme/m https://github.com/acme/m/tree/HEAD{/dir} https://github.com/acme/m/blob/HEAD{/dir}/{file}#L{line}",
 			wantBrowse:   "https://github.com/acme/m/tree/HEAD/sub",
+			wantGitHub:   true,
+		},
+		{
+			name:         "explicit source on github",
+			repo:         "https://git.example.org/m",
+			source:       &Source{Home: "https://github.com/acme/m", Dir: "https://github.com/acme/m/tree/main{/dir}", File: "https://github.com/acme/m/blob/main{/dir}/{file}"},
+			wantGoSource: "example.com/m https://github.com/acme/m https://github.com/acme/m/tree/main{/dir} https://github.com/acme/m/blob/main{/dir}/{file}",
+			wantBrowse:   "https://github.com/acme/m/tree/main/sub",
+			wantGitHub:   true,
 		},
 		{
 			name:         "gitlab",
@@ -329,6 +339,13 @@ func TestSource(t *testing.T) {
 			}
 			if !strings.Contains(string(html), `href="`+tt.wantBrowse+`"`) {
 				t.Errorf("page does not link to %s", tt.wantBrowse)
+			}
+			logo, err := render("icon-logo-github", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := strings.Contains(string(html), string(logo)); got != tt.wantGitHub {
+				t.Errorf("GitHub logo shown = %v, want %v", got, tt.wantGitHub)
 			}
 		})
 	}

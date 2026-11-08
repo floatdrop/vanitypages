@@ -27,7 +27,7 @@
       </a>
       {{- if .Browse}}
       <a class="g-button g-button_view_outlined g-button_size_l g-button_pin_round-round" href="{{.Browse}}">
-        <span class="g-button__icon g-button__icon_side_start"><span class="g-button__icon-inner">{{template "icon-code"}}</span></span>
+        <span class="g-button__icon g-button__icon_side_start"><span class="g-button__icon-inner">{{if .OnGitHub}}{{template "icon-logo-github"}}{{else}}{{template "icon-code"}}{{end}}</span></span>
         <span class="g-button__text">Source</span>
       </a>
       {{- end}}
