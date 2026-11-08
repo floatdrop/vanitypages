@@ -81,16 +81,8 @@ body.g-root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
-}
-
-.vp-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--g-spacing-2);
-  border-radius: var(--g-focus-border-radius);
-  color: var(--g-color-text-primary);
-  text-decoration: none;
+  gap: var(--g-spacing-4);
+  min-height: 64px;
 }
 
 .vp-brand:focus-visible,
@@ -99,8 +91,9 @@ body.g-root {
   outline-offset: -2px;
 }
 
-.vp-brand__mark {
+.vp-brand {
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   width: 28px;
@@ -142,7 +135,11 @@ body.g-root {
 .vp-crumbs {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--g-spacing-2);
+  min-width: 0;
+  padding-block: var(--g-spacing-2);
+  overflow-wrap: anywhere;
 }
 
 .vp-labels {

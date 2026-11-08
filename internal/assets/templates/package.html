@@ -14,17 +14,9 @@
 </head>
 {{template "body-start" .}}
 <main class="vp-container vp-main">
-  <nav class="vp-crumbs g-text g-text_variant_body-1" aria-label="Breadcrumb">
-    {{- range .Crumbs}}
-    <a class="g-link g-link_view_secondary" href="{{.Href}}">{{.Label}}</a>
-    <span class="g-color-text g-color-text_color_hint" aria-hidden="true">/</span>
-    {{- end}}
-    <span aria-current="page">{{.Current}}</span>
-  </nav>
-
   <section class="vp-hero vp-hero_compact">
     <span class="vp-labels">{{template "label" .Kind}}{{template "label" .VCS}}</span>
-    <h1 class="vp-path g-text g-text_variant_header-2"><span class="g-color-text g-color-text_color_hint">{{.Parent}}</span>{{.Name}}</h1>
+    <h1 class="vp-path g-text g-text_variant_display-1">{{.Current}}</h1>
     {{- if .Description}}
     <p class="g-text g-text_variant_body-3 g-color-text g-color-text_color_secondary">{{.Description}}</p>
     {{- end}}

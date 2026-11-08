@@ -122,6 +122,10 @@ func newSite(c Config) site {
 	}
 }
 
+func (s site) home() crumb {
+	return crumb{Label: s.Domain, Href: s.href("")}
+}
+
 func (s site) href(path string) string {
 	if path == "" {
 		return s.Base + "/"
@@ -131,6 +135,7 @@ func (s site) href(path string) string {
 
 type indexPage struct {
 	Site    site
+	Crumbs  []crumb
 	Modules []moduleCard
 }
 
@@ -144,6 +149,9 @@ type moduleCard struct {
 
 func (s site) indexPage(modules []Module) indexPage {
 	page := indexPage{Site: s}
+	if s.Title != s.Domain {
+		page.Crumbs = []crumb{s.home()}
+	}
 	for _, m := range modules {
 		if m.Hidden {
 			continue
@@ -186,8 +194,6 @@ type packagePage struct {
 	Kind       string
 	ImportPath string
 	Install    string // import path shown in the usage snippets
-	Parent     string // import path up to and including the last slash
-	Name       string // last import path element
 	// GoImport and GoSource always name the repository root, even on pages
 	// for nested paths: that's how the go command locates a package or
 	// submodule within a repository.
@@ -200,7 +206,7 @@ type packagePage struct {
 	RepoHref    string // repository URL, if browsers can open it
 	VCS         string
 	Crumbs      []crumb // ancestors, starting at the site root
-	Current     string  // breadcrumb label of this page
+	Current     string  // page heading: the path relative to its parent crumb
 	Submodules  []childLink
 	Packages    []childLink
 
@@ -290,8 +296,7 @@ type pageSpec struct {
 
 func (s site) modulePages(m Module) []packagePage {
 	repo := s.repository(m)
-	home := crumb{Label: s.Domain, Href: s.href("")}
-	moduleTrail := []crumb{home, {Label: m.Path, Href: s.href(m.Path)}}
+	moduleTrail := []crumb{s.home(), {Label: m.Path, Href: s.href(m.Path)}}
 
 	root := pageSpec{
 		kind:        "Module",
@@ -350,7 +355,6 @@ func appendPackages(specs []pageSpec, s site, owner string, trail []crumb, packa
 
 func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 	importPath := s.Domain + "/" + spec.path
-	parent, name, _ := strings.CutLast(importPath, "/")
 	last := len(spec.trail) - 1
 	install := s.Domain + "/" + cmp.Or(spec.install, spec.path)
 	page := packagePage{
@@ -358,8 +362,6 @@ func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 		Kind:        spec.kind,
 		ImportPath:  importPath,
 		Install:     install,
-		Parent:      parent + "/",
-		Name:        name,
 		GoImport:    repo.goImport,
 		GoSource:    repo.goSource,
 		Description: spec.description,

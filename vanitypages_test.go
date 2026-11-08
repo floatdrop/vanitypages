@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -162,6 +163,56 @@ func TestRenderDomainWithPath(t *testing.T) {
 		if !strings.Contains(page, want) {
 			t.Errorf("page is missing %q", want)
 		}
+	}
+}
+
+var htmlTag = regexp.MustCompile(`<[^>]*>`)
+
+// elementText returns the normalized text of the first element named tag.
+func elementText(t *testing.T, html []byte, tag string) string {
+	t.Helper()
+	_, rest, ok := strings.Cut(string(html), "<"+tag)
+	if !ok {
+		t.Fatalf("no <%s> element", tag)
+	}
+	inner, _, ok := strings.Cut(rest, "</"+tag+">")
+	if !ok {
+		t.Fatalf("unclosed <%s> element", tag)
+	}
+	return strings.Join(strings.Fields(htmlTag.ReplaceAllString("<"+tag+inner, " ")), " ")
+}
+
+func TestHeadingsAreNotRepeated(t *testing.T) {
+	titled := exampleConfig()
+	titled.Title = "Acme"
+
+	tests := []struct {
+		name     string
+		cfg      Config
+		file     string
+		wantNav  string
+		wantHead string
+	}{
+		{"index", exampleConfig(), "index.html", "", "go.example.com"},
+		{"titled index", titled, "index.html", "go.example.com", "Acme"},
+		{"module", exampleConfig(), "cache/index.html", "go.example.com", "cache"},
+		{"package", exampleConfig(), "cache/lru/index.html", "go.example.com / cache", "lru"},
+		{"submodule", exampleConfig(), "cache/contrib/redis/index.html", "go.example.com / cache", "contrib/redis"},
+		{"submodule package", exampleConfig(), "cache/contrib/redis/cluster/index.html", "go.example.com / cache / contrib/redis", "cluster"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			files, err := tt.cfg.Render()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := elementText(t, files[tt.file], "nav"); got != tt.wantNav {
+				t.Errorf("breadcrumb = %q, want %q", got, tt.wantNav)
+			}
+			if got := elementText(t, files[tt.file], "h1"); got != tt.wantHead {
+				t.Errorf("heading = %q, want %q", got, tt.wantHead)
+			}
+		})
 	}
 }
 

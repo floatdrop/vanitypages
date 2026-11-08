@@ -9,10 +9,15 @@
 <div class="vp-page">
 <header class="vp-header">
   <div class="vp-container vp-header__inner">
-    <a class="vp-brand" href="{{.Site.Base}}/">
-      <span class="vp-brand__mark">{{template "icon-cube"}}</span>
-      <span class="g-text g-text_variant_subheader-2">{{.Site.Domain}}</span>
-    </a>
+    <nav class="vp-crumbs g-text g-text_variant_subheader-2" aria-label="Breadcrumb">
+      <a class="vp-brand" href="{{.Site.Base}}/" aria-label="{{.Site.Domain}} home">{{template "icon-cube"}}</a>
+      {{- range $i, $crumb := .Crumbs}}
+      {{- if $i}}
+      <span class="g-color-text g-color-text_color_hint" aria-hidden="true">/</span>
+      {{- end}}
+      <a class="g-link g-link_view_primary" href="{{$crumb.Href}}">{{$crumb.Label}}</a>
+      {{- end}}
+    </nav>
     <button type="button" class="g-button g-button_view_flat-secondary g-button_size_l g-button_pin_round-round vp-js-only" data-theme-toggle aria-label="Toggle color theme" title="Toggle color theme">
       <span class="g-button__icon"><span class="g-button__icon-inner"><span class="vp-icon-light">{{template "icon-moon"}}</span><span class="vp-icon-dark">{{template "icon-sun"}}</span></span></span>
     </button>
