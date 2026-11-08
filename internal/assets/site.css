@@ -138,10 +138,8 @@ body.g-root {
 }
 
 .vp-crumbs h1 {
-  flex: 1;
-  min-width: 0;
   margin: 0;
-  font: var(--g-text-display-1-font);
+  font: inherit;
 }
 
 .vp-labels {
@@ -235,7 +233,7 @@ body.g-root {
 
 .vp-modules .vp-row__name {
   flex: 0 0 9rem;
-  font: var(--g-text-subheader-2-font);
+  font: var(--g-text-subheader-3-font);
 }
 
 .vp-modules .vp-row__text {
