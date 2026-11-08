@@ -44,8 +44,8 @@ func sameDetail(a, b Detail) bool {
 
 func TestFetchDetails(t *testing.T) {
 	srv := fakeDocs(t, map[string]string{
-		"go.example.com/cache/v2":  `{"modulePath":"go.example.com/cache/v2","version":"v2.1.0","synopsis":"Package cache caches.","licenses":[{"types":["MIT"]},{"types":["MIT","Apache-2.0"]}]}`,
-		"go.example.com/cache/lru": `{"modulePath":"go.example.com/cache/v2","version":"v2.1.0","synopsis":"Package lru evicts."}`,
+		"go.example.com/cache/v2":     `{"modulePath":"go.example.com/cache/v2","version":"v2.1.0","synopsis":"Package cache caches.","licenses":[{"types":["MIT"]},{"types":["MIT","Apache-2.0"]}]}`,
+		"go.example.com/cache/v2/lru": `{"modulePath":"go.example.com/cache/v2","version":"v2.1.0","synopsis":"Package lru evicts."}`,
 	}, map[string]string{
 		"go.example.com/cache/v2": `{"commitTime":"2026-03-16T17:32:55Z"}`,
 	})
@@ -66,8 +66,8 @@ func TestFetchDetails(t *testing.T) {
 	}
 	published := time.Date(2026, 3, 16, 17, 32, 55, 0, time.UTC)
 	want := Details{
-		"go.example.com/cache/v2":  {Version: "v2.1.0", Published: published, License: "MIT, Apache-2.0", Synopsis: "Package cache caches."},
-		"go.example.com/cache/lru": {Version: "v2.1.0", Published: published, Synopsis: "Package lru evicts."},
+		"go.example.com/cache/v2":     {Version: "v2.1.0", Published: published, License: "MIT, Apache-2.0", Synopsis: "Package cache caches."},
+		"go.example.com/cache/v2/lru": {Version: "v2.1.0", Published: published, Synopsis: "Package lru evicts."},
 	}
 	if !maps.EqualFunc(got, want, sameDetail) {
 		t.Errorf("details = %+v, want %+v", got, want)
@@ -119,7 +119,7 @@ func TestRenderDetails(t *testing.T) {
 				License:   "MIT, Apache-2.0",
 				Synopsis:  "Package cache caches.",
 			},
-			"go.example.com/cache/lru":       {Version: "v2.1.0", Synopsis: "Package lru evicts."},
+			"go.example.com/cache/v2/lru":    {Version: "v2.1.0", Synopsis: "Package lru evicts."},
 			"go.example.com/cache/redis":     {Version: "v0.4.0", Synopsis: "Loses to the configured description."},
 			"go.example.com/cache/memcached": {Version: "v0.1.0", Synopsis: "Package memcached talks to memcached."},
 		},
@@ -150,7 +150,7 @@ func TestRenderDetails(t *testing.T) {
 		t.Error("index does not fall back to the synopsis")
 	}
 
-	pkg := string(files["cache/lru/index.html"])
+	pkg := string(files["cache/v2/lru/index.html"])
 	if !strings.Contains(pkg, "v2.1.0") {
 		t.Error("package page has no version")
 	}

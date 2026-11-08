@@ -1,6 +1,6 @@
 {{define "head"}}<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23007d9c'/%3E%3Cpath d='M16 7l8 4.5v9L16 25l-8-4.5v-9z' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="{{if .Site.Icon}}{{.Site.Icon}}{{else}}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23007d9c'/%3E%3Cpath d='M16 7l8 4.5v9L16 25l-8-4.5v-9z' fill='none' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E{{end}}">
 <link rel="stylesheet" href="{{.Site.Base}}/-/vanitypages.css">
 <script src="{{.Site.Base}}/-/vanitypages.js" defer></script>{{end}}
 
@@ -10,7 +10,7 @@
 <header class="vp-header">
   <div class="vp-container vp-header__inner">
     <nav class="vp-crumbs g-text g-text_variant_subheader-2" aria-label="Breadcrumb">
-      <a class="vp-brand" href="{{.Site.Base}}/" aria-label="{{.Site.Domain}} home">{{template "icon-cube"}}</a>
+      <a class="vp-brand" href="{{.Site.Base}}/" aria-label="{{.Site.Domain}} home">{{if .Site.Icon}}<img src="{{.Site.Icon}}" alt="">{{else}}{{template "icon-cube"}}{{end}}</a>
       {{- range $i, $crumb := .Crumbs}}
       {{- if $i}}
       <span class="g-color-text g-color-text_color_hint" aria-hidden="true">/</span>

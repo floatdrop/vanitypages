@@ -65,6 +65,7 @@ pages go without them. Rebuild regularly to keep the details current.
 | `domain`      | Host the site is served from, optionally with a path. Required.             |
 | `title`       | Index page heading. Defaults to `domain`.                                   |
 | `description` | Text at the top of the index page.                                          |
+| `icon`        | Header and favicon image file (SVG, PNG, ICO or WebP), relative to config.  |
 | `docs`        | Base URL of the documentation site. Defaults to `https://pkg.go.dev`.       |
 | `modules`     | The modules to serve. Required.                                             |
 
@@ -96,7 +97,9 @@ reaches the module.
 - A module with its own `go.mod` in a subdirectory, tagged `contrib/redis/v1.2.3`
   or kept in a `v2/` directory: add it to `submodules`. Its `path` must match the
   directory.
-- A package you want a browsable page for: add it to `packages`.
+- A package you want a browsable page for: add it to `packages`. In a module
+  with `versions`, the page is for the newest major version, such as
+  `example.com/foo/v2/pkg`.
 
 ## Go API
 
@@ -120,15 +123,80 @@ reads a JSON config file. Assign the result of `Config.FetchDetails` to
 
 ## Deployment
 
-`.github/workflows/pages.yml` builds `vanitypages.json` from this repository and
-deploys it to GitHub Pages on every push to `main` and once a day, which picks
-up new releases.
+To host a site on GitHub Pages:
+
+1. Put your `vanitypages.json` in a repository and add
+   `.github/workflows/pages.yml`:
+
+   ```yaml
+   name: Pages
+
+   on:
+     push:
+       branches: [main]
+     schedule:
+       - cron: "23 4 * * *"
+     workflow_dispatch:
+
+   permissions:
+     contents: read
+     pages: write
+     id-token: write
+
+   concurrency:
+     group: pages
+     cancel-in-progress: true
+
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
+       environment:
+         name: github-pages
+         url: ${{ steps.deployment.outputs.page_url }}
+       steps:
+         - uses: actions/checkout@v7
+         - uses: actions/setup-go@v7
+           with:
+             go-version: stable
+             cache: false
+         - run: go run github.com/floatdrop/vanitypages/cmd/vanitypages@latest -details
+         - uses: actions/upload-pages-artifact@v5
+           with:
+             path: public
+         - id: deployment
+           uses: actions/deploy-pages@v5
+   ```
+
+2. In **Settings > Pages**, set **Source** to **GitHub Actions** and enter your
+   domain under **Custom domain**.
+3. Point DNS at GitHub Pages. For a subdomain, add a `CNAME` record for
+   `<owner>.github.io`. For an apex domain, add `A` records for
+   `185.199.108.153` through `185.199.111.153` and `AAAA` records for
+   `2606:50c0:8000::153` through `2606:50c0:8003::153`, replacing any others.
+4. When GitHub has issued the certificate, turn on **Enforce HTTPS**. The go
+   command only fetches over HTTPS.
+5. Check the site directly, bypassing the module proxy:
+
+   ```sh
+   GOPROXY=direct go list -m -versions your.domain/module
+   ```
+
+The daily schedule keeps `-details` current with new releases. GitHub pauses
+scheduled workflows after 60 days without repository activity.
+
+Any other static host works too: run `vanitypages` and upload `public/`. The host
+has to serve `index.html` for directory URLs.
+
+This repository publishes its own site the same way.
 
 ## Third-party assets
 
 Generated sites include Gravity UI styles and icons (MIT), with licenses at
 `/-/THIRD_PARTY_LICENSES.txt`. To update them, change the versions in
 `internal/assets/vendor.sh` and run it.
+
+`yandex.png` is the Yandex logo, used by this repository's own site. It is not
+covered by the MIT license.
 
 ## License
 

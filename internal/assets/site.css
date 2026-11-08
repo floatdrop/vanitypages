@@ -146,9 +146,12 @@ body.g-root {
   color: var(--g-color-text-primary);
 }
 
-.vp-brand .g-icon {
+.vp-brand .g-icon,
+.vp-brand img {
+  display: block;
   width: 24px;
   height: 24px;
+  object-fit: contain;
 }
 
 .vp-main {

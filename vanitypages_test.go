@@ -297,6 +297,127 @@ func TestRenderMajorVersions(t *testing.T) {
 	}
 }
 
+func TestPackagesFollowNewestMajor(t *testing.T) {
+	cfg := Config{Domain: "example.com", Modules: []Module{{
+		Path:     "m",
+		Repo:     "https://github.com/acme/m",
+		Versions: []string{"v2", "v3"},
+		Packages: []string{"lru"},
+	}}}
+	files, err := cfg.Render()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	const name = "m/v3/lru/index.html"
+	page := string(files[name])
+	for _, want := range []string{
+		"go get example.com/m/v3/lru",
+		"https://pkg.go.dev/example.com/m/v3/lru",
+		// The code of a major version lives at the repository root.
+		`href="https://github.com/acme/m/tree/HEAD/lru"`,
+	} {
+		if !strings.Contains(page, want) {
+			t.Errorf("package page is missing %q", want)
+		}
+	}
+	if got, want := parseMeta(t, files[name])["go-import"], "example.com/m git https://github.com/acme/m"; got != want {
+		t.Errorf("go-import = %q, want %q", got, want)
+	}
+	for _, stale := range []string{"m/lru/index.html", "m/v2/lru/index.html"} {
+		if _, ok := files[stale]; ok {
+			t.Errorf("%s advertises a path other than the newest major", stale)
+		}
+	}
+	for _, parent := range []string{"m/index.html", "m/v3/index.html"} {
+		if !strings.Contains(string(files[parent]), `href="/m/v3/lru/"`) {
+			t.Errorf("%s does not link to the package", parent)
+		}
+	}
+	if strings.Contains(string(files["m/v2/index.html"]), "/lru/") {
+		t.Error("older major version lists the newest major's package")
+	}
+}
+
+func writeIcon(t *testing.T, name string) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), name)
+	if err := os.WriteFile(path, []byte("icon bytes"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+func TestRenderIcon(t *testing.T) {
+	cfg := exampleConfig()
+	cfg.Icon = writeIcon(t, "logo.png")
+	files, err := cfg.Render()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := string(files["-/icon.png"]); got != "icon bytes" {
+		t.Errorf("icon file = %q", got)
+	}
+	for _, name := range []string{"index.html", "cache/index.html"} {
+		page := string(files[name])
+		for _, want := range []string{`<link rel="icon" href="/-/icon.png">`, `<img src="/-/icon.png" alt="">`} {
+			if !strings.Contains(page, want) {
+				t.Errorf("%s is missing %q", name, want)
+			}
+		}
+		if strings.Contains(page, "data:image/svg") {
+			t.Errorf("%s still has the generic favicon", name)
+		}
+	}
+
+	cfg.Domain = "example.com/go"
+	files, err = cfg.Render()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if page := string(files["index.html"]); !strings.Contains(page, `src="/go/-/icon.png"`) {
+		t.Error("icon URL ignores the path of the domain")
+	}
+}
+
+func TestRenderDefaultIcon(t *testing.T) {
+	files, err := exampleConfig().Render()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if page := string(files["index.html"]); !strings.Contains(page, "data:image/svg") || strings.Contains(page, "<img") {
+		t.Error("page should use the generic icon")
+	}
+}
+
+func TestGenerateWritesNothingWhenIconIsMissing(t *testing.T) {
+	cfg := exampleConfig()
+	cfg.Icon = filepath.Join(t.TempDir(), "missing.svg")
+	dir := filepath.Join(t.TempDir(), "public")
+	if err := cfg.Generate(dir); err == nil || !strings.Contains(err.Error(), "icon:") {
+		t.Fatalf("Generate error = %v", err)
+	}
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		t.Errorf("output directory exists: %v", err)
+	}
+}
+
+func TestLoadResolvesIconAgainstConfigFile(t *testing.T) {
+	dir := t.TempDir()
+	config := filepath.Join(dir, "config.json")
+	data := `{"domain":"example.com","icon":"assets/logo.svg","modules":[{"path":"m","repo":"https://a.dev/m"}]}`
+	if err := os.WriteFile(config, []byte(data), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := Load(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := filepath.Join(dir, "assets", "logo.svg"); cfg.Icon != want {
+		t.Errorf("Icon = %q, want %q", cfg.Icon, want)
+	}
+}
+
 func TestHiddenModuleIsImportableButNotListed(t *testing.T) {
 	cfg := exampleConfig()
 	cfg.Modules = append(cfg.Modules, Module{Path: "secret", Repo: "https://github.com/acme/secret", Hidden: true})
@@ -428,6 +549,16 @@ func TestValidate(t *testing.T) {
 		{"duplicate package", func(c *Config) { c.Modules[0].Packages = []string{"lru", "lru"} }, "already declared"},
 		{"submodule collides with package", func(c *Config) { c.Modules[0].Packages = []string{"contrib/redis"} }, "already declared"},
 		{"duplicate module", func(c *Config) { c.Modules = append(c.Modules, c.Modules[0]) }, "already declared"},
+		{"paths differing by case", func(c *Config) {
+			c.Modules = append(c.Modules, Module{Path: "Cache", Repo: "https://github.com/acme/other"})
+		}, "already declared"},
+		{"package collides under the newest major", func(c *Config) {
+			c.Modules[0].Versions = []string{"v2"}
+			c.Modules[0].Packages = []string{"lru"}
+			c.Modules[0].Submodules[0].Path = "v2/lru"
+		}, "already declared"},
+		{"package named index.html", func(c *Config) { c.Modules[0].Packages = []string{"index.html"} }, "index.html"},
+		{"bad icon type", func(c *Config) { c.Icon = "logo.bmp" }, "icon:"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -518,7 +649,7 @@ func TestRepositoryConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := cfg.Validate(); err != nil {
+	if _, err := cfg.Render(); err != nil {
 		t.Fatal(err)
 	}
 }

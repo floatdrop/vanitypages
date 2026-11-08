@@ -25,6 +25,12 @@
       "type": "string",
       "description": "Text shown at the top of the index page."
     },
+    "icon": {
+      "type": "string",
+      "description": "Path of an image shown in the header and as the favicon, relative to the config file.",
+      "pattern": "\\.(svg|png|ico|webp)$",
+      "examples": ["logo.svg"]
+    },
     "docs": {
       "type": "string",
       "description": "Base URL of the documentation site. Import paths are appended to it.",
@@ -45,7 +51,7 @@
     },
     "packages": {
       "type": "array",
-      "description": "Package paths inside the module, relative to its path, that should get a page of their own.",
+      "description": "Package paths inside the module, relative to its root, that should get a page of their own. In a module with versions, the pages are for the newest major version.",
       "uniqueItems": true,
       "items": { "$ref": "#/definitions/relativePath" }
     },

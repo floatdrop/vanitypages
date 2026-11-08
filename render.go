@@ -72,6 +72,13 @@ func (c Config) Render() (map[string][]byte, error) {
 	for name, data := range assets.Static() {
 		files[assetsDir+"/"+name] = data
 	}
+	if c.Icon != "" {
+		data, err := os.ReadFile(c.Icon)
+		if err != nil {
+			return nil, fmt.Errorf("icon: %w", err)
+		}
+		files[c.iconFile()] = data
+	}
 
 	s := newSite(c)
 	index, err := render("index", s.indexPage(c.Modules))
@@ -105,6 +112,7 @@ type site struct {
 	Base        string // URL path the site is served under, without trailing slash
 	Title       string
 	Description string
+	Icon        string // URL of the custom icon, if any
 	docs        string
 	details     Details
 }
@@ -114,7 +122,12 @@ func newSite(c Config) site {
 	if _, rest, ok := strings.Cut(c.Domain, "/"); ok {
 		base = "/" + rest
 	}
+	icon := ""
+	if c.Icon != "" {
+		icon = base + "/" + c.iconFile()
+	}
 	return site{
+		Icon:        icon,
 		Domain:      c.Domain,
 		Base:        base,
 		Title:       cmp.Or(c.Title, c.Domain),
@@ -321,27 +334,34 @@ type pageSpec struct {
 func (s site) modulePages(m Module) []packagePage {
 	repo := s.repository(m)
 	moduleTrail := []crumb{s.home(), {Label: m.Path, Href: s.href(m.Path)}}
+	newest := advertised(m)
 
 	specs := []pageSpec{{
 		kind:        "module",
 		path:        m.Path,
-		install:     advertised(m),
+		install:     newest,
 		description: m.Description,
 		trail:       moduleTrail,
 		submodules:  m.Submodules,
 		packages:    m.Packages,
 	}}
+	packageTrail := moduleTrail
 	for _, version := range m.Versions {
 		path := m.Path + "/" + version
-		specs = append(specs, pageSpec{
+		spec := pageSpec{
 			kind:        "module",
 			path:        path,
 			browsePath:  m.Path,
 			description: m.Description,
 			trail:       append(slices.Clip(moduleTrail), crumb{Label: version, Href: s.href(path)}),
-		})
+		}
+		if path == newest {
+			spec.packages = m.Packages
+			packageTrail = spec.trail
+		}
+		specs = append(specs, spec)
 	}
-	specs = appendPackages(specs, s, m.Path, moduleTrail, m.Packages)
+	specs = appendPackages(specs, s, newest, m.Path, packageTrail, m.Packages)
 	for _, sub := range m.Submodules {
 		path := m.Path + "/" + sub.Path
 		trail := append(slices.Clip(moduleTrail), crumb{Label: sub.Path, Href: s.href(path)})
@@ -352,7 +372,7 @@ func (s site) modulePages(m Module) []packagePage {
 			trail:       trail,
 			packages:    sub.Packages,
 		})
-		specs = appendPackages(specs, s, path, trail, sub.Packages)
+		specs = appendPackages(specs, s, path, path, trail, sub.Packages)
 	}
 
 	pages := make([]packagePage, 0, len(specs))
@@ -362,13 +382,16 @@ func (s site) modulePages(m Module) []packagePage {
 	return pages
 }
 
-func appendPackages(specs []pageSpec, s site, owner string, trail []crumb, packages []string) []pageSpec {
+// appendPackages adds pages for packages under the import path owner, whose
+// code is at sourceDir.
+func appendPackages(specs []pageSpec, s site, owner, sourceDir string, trail []crumb, packages []string) []pageSpec {
 	for _, p := range packages {
 		path := owner + "/" + p
 		specs = append(specs, pageSpec{
-			kind:  "package",
-			path:  path,
-			trail: append(slices.Clip(trail), crumb{Label: p, Href: s.href(path)}),
+			kind:       "package",
+			path:       path,
+			browsePath: sourceDir + "/" + p,
+			trail:      append(slices.Clip(trail), crumb{Label: p, Href: s.href(path)}),
 		})
 	}
 	return specs
@@ -408,7 +431,7 @@ func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 		})
 	}
 	for _, p := range spec.packages {
-		path := spec.path + "/" + p
+		path := cmp.Or(spec.install, spec.path) + "/" + p
 		page.Packages = append(page.Packages, childLink{Name: p, Description: s.synopsis(path), Href: s.href(path)})
 	}
 	return page

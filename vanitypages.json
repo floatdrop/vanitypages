@@ -1,6 +1,7 @@
 {
   "$schema": "./vanitypages.schema.json",
   "domain": "golang.yandex",
+  "icon": "yandex.png",
   "modules": [
     {
       "path": "hasql",

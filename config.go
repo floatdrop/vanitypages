@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -33,6 +34,7 @@ const assetsDir = "-"
 
 var (
 	vcsTypes     = []string{"git", "hg", "svn", "bzr", "fossil", "mod"}
+	iconTypes    = []string{".svg", ".png", ".ico", ".webp"}
 	majorVersion = regexp.MustCompile(`^v([2-9]|[1-9][0-9]+)$`)
 )
 
@@ -49,6 +51,11 @@ type Config struct {
 	Title string `json:"title,omitempty"`
 	// Description is shown at the top of the index page.
 	Description string `json:"description,omitempty"`
+	// Icon is the path of an .svg, .png, .ico or .webp image shown in the
+	// header and as the favicon, instead of a generic icon. [Load] resolves
+	// it against the directory of the config file; otherwise it is relative
+	// to the working directory.
+	Icon string `json:"icon,omitempty"`
 	// Docs is the base URL of the documentation site; import paths are
 	// appended to it. It defaults to https://pkg.go.dev.
 	Docs string `json:"docs,omitempty"`
@@ -77,8 +84,9 @@ type Module struct {
 	// advertises the newest. A major version kept in its own directory is a
 	// [Submodule] instead.
 	Versions []string `json:"versions,omitempty"`
-	// Packages lists package paths inside the module, relative to Path, that
-	// should get a page of their own.
+	// Packages lists package paths inside the module, relative to its root,
+	// that should get a page of their own. With Versions, the pages are for
+	// the newest major version, at import paths such as foo/v2/pkg.
 	Packages []string `json:"packages,omitempty"`
 	// Submodules lists Go modules nested in this module's repository.
 	Submodules []Submodule `json:"submodules,omitempty"`
@@ -124,6 +132,9 @@ func Load(path string) (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("%s: %w", path, err)
 	}
+	if c.Icon != "" && !filepath.IsAbs(c.Icon) {
+		c.Icon = filepath.Join(filepath.Dir(path), filepath.FromSlash(c.Icon))
+	}
 	return c, nil
 }
 
@@ -144,6 +155,9 @@ func (c Config) Validate() error {
 		return fmt.Errorf("domain: %w", err)
 	}
 	v := validator{domain: c.Domain, pages: make(map[string]string)}
+	if c.Icon != "" && !slices.Contains(iconTypes, filepath.Ext(c.Icon)) {
+		v.add("icon", fmt.Errorf("%q must end in one of %s", c.Icon, strings.Join(iconTypes, ", ")))
+	}
 	if c.Docs != "" {
 		v.add("docs", checkWebURL(c.Docs))
 	}
@@ -156,9 +170,14 @@ func (c Config) Validate() error {
 	return errors.Join(v.errs...)
 }
 
+// iconFile returns the site-relative path the icon is published at.
+func (c Config) iconFile() string {
+	return assetsDir + "/icon" + filepath.Ext(c.Icon)
+}
+
 type validator struct {
 	domain string
-	pages  map[string]string // page path to the field that declares it
+	pages  map[string]string // lowercase page path to the field that declares it
 	errs   []error
 }
 
@@ -170,17 +189,21 @@ func (v *validator) add(field string, err error) {
 
 // path checks a path relative to the domain and claims its page.
 func (v *validator) path(field, path string, check func(string) error) {
+	// Pages become files, and file systems may ignore case.
+	key := strings.ToLower(path)
 	switch {
 	case strings.HasSuffix(path, "/") || strings.HasPrefix(path, "/"):
 		v.add(field, fmt.Errorf("%q must not start or end with a slash", path))
-	case v.pages[path] != "":
-		v.add(field, fmt.Errorf("%q is already declared by %s", path, v.pages[path]))
+	case v.pages[key] != "":
+		v.add(field, fmt.Errorf("%q is already declared by %s", path, v.pages[key]))
+	case slices.Contains(strings.Split(key, "/"), "index.html"):
+		v.add(field, fmt.Errorf("%q must not have an index.html element: pages are written to files of that name", path))
 	default:
 		if err := check(v.domain + "/" + path); err != nil {
 			v.add(field, err)
 			return
 		}
-		v.pages[path] = field
+		v.pages[key] = field
 	}
 }
 
@@ -212,7 +235,7 @@ func (v *validator) module(field string, m Module) {
 		v.path(versionField, m.Path+"/"+version, module.CheckPath)
 	}
 
-	v.packages(field, m.Path, m.Packages)
+	v.packages(field, advertised(m), m.Packages)
 	for i, sub := range m.Submodules {
 		subField := fmt.Sprintf("%s.submodules[%d]", field, i)
 		if sub.Path == "" {
