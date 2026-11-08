@@ -1,6 +1,6 @@
 {
   "$schema": "./vanitypages.schema.json",
-  "domain": "floatdrop.github.io/vanitypages",
+  "domain": "golang.yandex",
   "modules": [
     {
       "path": "hasql",
