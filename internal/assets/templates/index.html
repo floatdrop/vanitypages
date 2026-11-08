@@ -10,12 +10,9 @@
 </head>
 {{template "body-start" .}}
 <main class="vp-container vp-main">
-  <section class="vp-hero">
-    <h1 class="vp-path g-text g-text_variant_display-2">{{.Site.Title}}</h1>
-    {{- if .Site.Description}}
-    <p class="g-text g-text_variant_body-3 g-color-text g-color-text_color_secondary">{{.Site.Description}}</p>
-    {{- end}}
-  </section>
+  {{- if .Site.Description}}
+  <p class="g-text g-text_variant_body-3 g-color-text g-color-text_color_secondary">{{.Site.Description}}</p>
+  {{- end}}
   <section class="vp-modules" aria-label="Modules">
     <div class="vp-toolbar">
       <div class="g-segmented-radio-group g-segmented-radio-group_size_m vp-js-only" role="radiogroup" aria-label="Layout" data-view-switch>

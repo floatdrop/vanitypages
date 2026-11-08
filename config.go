@@ -44,9 +44,10 @@ type Config struct {
 	// Domain is the host the site is served from, optionally with a path,
 	// such as "go.example.com" or "example.com/go".
 	Domain string `json:"domain"`
-	// Title is the index page heading. It defaults to Domain.
+	// Title is the index page heading, shown in the header. It defaults to
+	// Domain.
 	Title string `json:"title,omitempty"`
-	// Description is shown under the index page heading.
+	// Description is shown at the top of the index page.
 	Description string `json:"description,omitempty"`
 	// Docs is the base URL of the documentation site; import paths are
 	// appended to it. It defaults to https://pkg.go.dev.

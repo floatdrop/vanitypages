@@ -15,7 +15,7 @@
       {{- if $i}}
       <span class="g-color-text g-color-text_color_hint" aria-hidden="true">/</span>
       {{- end}}
-      <a class="g-link g-link_view_primary" href="{{$crumb.Href}}">{{$crumb.Label}}</a>
+      {{if $crumb.Href}}<a class="g-link g-link_view_primary" href="{{$crumb.Href}}">{{$crumb.Label}}</a>{{else}}<h1>{{$crumb.Label}}</h1>{{end}}
       {{- end}}
     </nav>
     <button type="button" class="g-button g-button_view_flat-secondary g-button_size_l g-button_pin_round-round vp-js-only" data-theme-toggle aria-label="Toggle color theme" title="Toggle color theme">

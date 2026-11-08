@@ -23,7 +23,7 @@
     },
     "description": {
       "type": "string",
-      "description": "Text shown under the index page heading."
+      "description": "Text shown at the top of the index page."
     },
     "docs": {
       "type": "string",

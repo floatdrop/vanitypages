@@ -48,7 +48,7 @@ output directory if you remove a module from the config.
 | ------------- | --------------------------------------------------------------------------- |
 | `domain`      | Host the site is served from, optionally with a path. Required.             |
 | `title`       | Index page heading. Defaults to `domain`.                                   |
-| `description` | Text under the index page heading.                                          |
+| `description` | Text at the top of the index page.                                          |
 | `docs`        | Base URL of the documentation site. Defaults to `https://pkg.go.dev`.       |
 | `modules`     | The modules to serve. Required.                                             |
 

@@ -193,8 +193,8 @@ func TestHeadingsAreNotRepeated(t *testing.T) {
 		wantNav  string
 		wantHead string
 	}{
-		{"index", exampleConfig(), "index.html", "", "go.example.com"},
-		{"titled index", titled, "index.html", "go.example.com", "Acme"},
+		{"index", exampleConfig(), "index.html", "go.example.com", "go.example.com"},
+		{"titled index", titled, "index.html", "Acme", "Acme"},
 		{"module", exampleConfig(), "cache/index.html", "go.example.com", "cache"},
 		{"package", exampleConfig(), "cache/lru/index.html", "go.example.com / cache", "lru"},
 		{"submodule", exampleConfig(), "cache/contrib/redis/index.html", "go.example.com / cache", "contrib/redis"},
@@ -225,6 +225,9 @@ func TestIndexListsModulesByRelativePath(t *testing.T) {
 	index := string(files["index.html"])
 	if strings.Contains(index, cfg.Domain+"/") {
 		t.Error("index repeats the domain in module names")
+	}
+	if strings.Contains(elementText(t, files["index.html"], "main"), cfg.Domain) {
+		t.Error("index repeats the title below the header")
 	}
 	for _, want := range []string{`>cache</span>`, "data-view-switch", `value="cards"`, `value="list"`} {
 		if !strings.Contains(index, want) {

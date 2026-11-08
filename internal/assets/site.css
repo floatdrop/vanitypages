@@ -115,11 +115,6 @@ body.g-root {
   display: flex;
   flex-direction: column;
   gap: var(--g-spacing-3);
-  padding-block: var(--g-spacing-10) var(--g-spacing-4);
-}
-
-.vp-hero_compact {
-  padding-block: 0;
 }
 
 .vp-main h1,
@@ -140,6 +135,11 @@ body.g-root {
   min-width: 0;
   padding-block: var(--g-spacing-2);
   overflow-wrap: anywhere;
+}
+
+.vp-crumbs h1 {
+  margin: 0;
+  font: inherit;
 }
 
 .vp-labels {

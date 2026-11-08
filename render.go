@@ -147,10 +147,7 @@ type moduleCard struct {
 }
 
 func (s site) indexPage(modules []Module) indexPage {
-	page := indexPage{Site: s}
-	if s.Title != s.Domain {
-		page.Crumbs = []crumb{s.home()}
-	}
+	page := indexPage{Site: s, Crumbs: []crumb{{Label: s.Title}}}
 	for _, m := range modules {
 		if m.Hidden {
 			continue
@@ -224,6 +221,8 @@ type packagePage struct {
 	path string // site-relative directory
 }
 
+// crumb is a header item: a link to an ancestor or, without Href, the heading
+// of the current page.
 type crumb struct {
 	Label string
 	Href  string

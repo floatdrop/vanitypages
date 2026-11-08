@@ -14,7 +14,7 @@
 </head>
 {{template "body-start" .}}
 <main class="vp-container vp-main">
-  <section class="vp-hero vp-hero_compact">
+  <section class="vp-hero">
     <span class="vp-labels">{{template "label" .Kind}}{{if .VCSBadge}}{{template "label" .VCSBadge}}{{end}}</span>
     <h1 class="vp-path g-text g-text_variant_display-1">{{.Current}}</h1>
     {{- if .Description}}
