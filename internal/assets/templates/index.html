@@ -16,16 +16,31 @@
     <p class="g-text g-text_variant_body-3 g-color-text g-color-text_color_secondary">{{.Site.Description}}</p>
     {{- end}}
   </section>
-  <section class="vp-grid" aria-label="Modules">
-    {{- range .Modules}}
-    <a class="g-card g-card_theme_normal g-card_type_action g-card_size_m g-card_clickable vp-card" href="{{.Href}}">
-      <span class="vp-path g-text g-text_variant_subheader-3"><span class="g-color-text g-color-text_color_hint">{{.Prefix}}</span>{{.Name}}</span>
-      {{- if .Description}}
-      <span class="g-text g-text_variant_body-2 g-color-text g-color-text_color_secondary vp-card__text">{{.Description}}</span>
+  <section class="vp-modules" aria-label="Modules">
+    <div class="vp-toolbar">
+      <div class="g-segmented-radio-group g-segmented-radio-group_size_m vp-js-only" role="radiogroup" aria-label="Layout" data-view-switch>
+        <label class="g-segmented-radio-group__option g-segmented-radio-group__option_checked" title="Cards">
+          <input class="g-segmented-radio-group__option-control" type="radio" name="view" value="cards" aria-label="Cards" checked>
+          <span class="g-segmented-radio-group__option-text g-segmented-radio-group__option-text_icon">{{template "icon-layout-cells-large"}}</span>
+        </label>
+        <label class="g-segmented-radio-group__option" title="List">
+          <input class="g-segmented-radio-group__option-control" type="radio" name="view" value="list" aria-label="List">
+          <span class="g-segmented-radio-group__option-text g-segmented-radio-group__option-text_icon">{{template "icon-list-ul"}}</span>
+        </label>
+      </div>
+    </div>
+    <div class="vp-grid">
+      {{- range .Modules}}
+      <a class="g-card g-card_theme_normal g-card_type_action g-card_size_m g-card_clickable vp-card" href="{{.Href}}">
+        <span class="vp-path g-text g-text_variant_subheader-3">{{.Name}}</span>
+        {{- if .Description}}
+        <span class="g-text g-text_variant_body-2 g-color-text g-color-text_color_secondary vp-card__text">{{.Description}}</span>
+        {{- end}}
+        <span class="vp-labels">{{range .Labels}}{{template "label" .}}{{end}}</span>
+        <span class="g-color-text g-color-text_color_hint vp-card__chevron">{{template "icon-chevron-right"}}</span>
+      </a>
       {{- end}}
-      <span class="vp-labels">{{range .Labels}}{{template "label" .}}{{end}}</span>
-    </a>
-    {{- end}}
+    </div>
   </section>
 </main>
 {{template "body-end" .}}

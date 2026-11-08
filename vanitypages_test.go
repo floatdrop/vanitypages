@@ -216,6 +216,23 @@ func TestHeadingsAreNotRepeated(t *testing.T) {
 	}
 }
 
+func TestIndexListsModulesByRelativePath(t *testing.T) {
+	cfg := exampleConfig()
+	files, err := cfg.Render()
+	if err != nil {
+		t.Fatal(err)
+	}
+	index := string(files["index.html"])
+	if strings.Contains(index, cfg.Domain+"/") {
+		t.Error("index repeats the domain in module names")
+	}
+	for _, want := range []string{`>cache</span>`, "data-view-switch", `value="cards"`, `value="list"`} {
+		if !strings.Contains(index, want) {
+			t.Errorf("index is missing %q", want)
+		}
+	}
+}
+
 func TestRenderMajorVersions(t *testing.T) {
 	cfg := Config{Domain: "example.com", Modules: []Module{{
 		Path:     "m",

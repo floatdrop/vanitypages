@@ -140,7 +140,6 @@ type indexPage struct {
 }
 
 type moduleCard struct {
-	Prefix      string
 	Name        string
 	Href        string
 	Description string
@@ -167,7 +166,6 @@ func (s site) indexPage(modules []Module) indexPage {
 			labels = append(labels, count(n, "package"))
 		}
 		page.Modules = append(page.Modules, moduleCard{
-			Prefix:      s.Domain + "/",
 			Name:        m.Path,
 			Href:        s.href(m.Path),
 			Description: m.Description,
