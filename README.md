@@ -121,3 +121,7 @@ deploys it to GitHub Pages on every push to `main`.
 Generated sites include Gravity UI styles and icons (MIT), with licenses at
 `/-/THIRD_PARTY_LICENSES.txt`. To update them, change the versions in
 `internal/assets/vendor.sh` and run it.
+
+## License
+
+[MIT](LICENSE)
