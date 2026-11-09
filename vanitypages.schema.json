@@ -25,6 +25,11 @@
       "type": "string",
       "description": "Text shown at the top of the index page."
     },
+    "copyright": {
+      "type": "string",
+      "description": "Copyright owner shown on the right of every footer, prefixed with © and the current year at generation time. Omit or leave empty to hide the notice.",
+      "examples": ["Acme"]
+    },
     "icon": {
       "type": "string",
       "description": "Path of an image shown in the header and as the favicon, relative to the config file.",

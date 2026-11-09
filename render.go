@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"golang.org/x/mod/semver"
 
@@ -112,6 +113,7 @@ type site struct {
 	Base        string // URL path the site is served under, without trailing slash
 	Title       string
 	Description string
+	Copyright   string // formatted notice, if any
 	Icon        string // URL of the custom icon, if any
 	docs        string
 	details     Details
@@ -126,12 +128,17 @@ func newSite(c Config) site {
 	if c.Icon != "" {
 		icon = base + "/" + c.iconFile()
 	}
+	copyright := ""
+	if c.Copyright != "" {
+		copyright = fmt.Sprintf("© %d %s", time.Now().Year(), c.Copyright)
+	}
 	return site{
 		Icon:        icon,
 		Domain:      c.Domain,
 		Base:        base,
 		Title:       cmp.Or(c.Title, c.Domain),
 		Description: c.Description,
+		Copyright:   copyright,
 		docs:        strings.TrimRight(cmp.Or(c.Docs, defaultDocs), "/"),
 		details:     c.Details,
 	}

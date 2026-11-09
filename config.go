@@ -51,6 +51,9 @@ type Config struct {
 	Title string `json:"title,omitempty"`
 	// Description is shown at the top of the index page.
 	Description string `json:"description,omitempty"`
+	// Copyright is the owner shown on the right of every footer, prefixed
+	// with © and the current year at generation time. Empty hides the notice.
+	Copyright string `json:"copyright,omitempty"`
 	// Icon is the path of an .svg, .png, .ico or .webp image shown in the
 	// header and as the favicon, instead of a generic icon. [Load] resolves
 	// it against the directory of the config file; otherwise it is relative

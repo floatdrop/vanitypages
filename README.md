@@ -29,6 +29,7 @@ validation in editors:
 {
   "$schema": "https://raw.githubusercontent.com/floatdrop/vanitypages/main/vanitypages.schema.json",
   "domain": "go.example.com",
+  "copyright": "Acme",
   "modules": [
     {
       "path": "cache",
@@ -67,9 +68,14 @@ pages go without them. Rebuild regularly to keep the details current.
 | `domain`      | Host the site is served from, optionally with a path. Required.             |
 | `title`       | Index page heading. Defaults to `domain`.                                   |
 | `description` | Text at the top of the index page.                                          |
+| `copyright`   | Copyright owner shown in the footer with the year of generation.            |
 | `icon`        | Header and favicon image file (SVG, PNG, ICO or WebP), relative to config.  |
 | `docs`        | Base URL of the documentation site. Defaults to `https://pkg.go.dev`.       |
 | `modules`     | The modules to serve. Required.                                             |
+
+Set `copyright` to the owner's name, not a full notice. Vanitypages adds `©`
+and the current year at generation time and displays it on the right of the
+footer. Omit it or leave it empty to hide the notice.
 
 Each module has:
 
