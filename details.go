@@ -101,7 +101,7 @@ func (s site) getJSON(ctx context.Context, endpoint string, query url.Values, v 
 	if err != nil {
 		return false, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	switch resp.StatusCode {
 	case http.StatusOK:
 		if err := json.UnmarshalRead(resp.Body, v); err != nil {

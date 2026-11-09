@@ -26,7 +26,9 @@ func fakeDocs(t *testing.T, packages, modules map[string]string) *httptest.Serve
 			case body == "":
 				http.Error(w, "down", http.StatusInternalServerError)
 			default:
-				io.WriteString(w, body)
+				if _, err := io.WriteString(w, body); err != nil {
+					t.Error(err)
+				}
 			}
 		}
 	}

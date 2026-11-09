@@ -36,27 +36,29 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 
+	var err error
 	switch {
 	case *schema:
-		stdout.Write(vanitypages.Schema())
-		return 0
+		_, err = stdout.Write(vanitypages.Schema())
 	case *version:
-		fmt.Fprintln(stdout, buildVersion())
-		return 0
-	}
-
-	cfg, err := vanitypages.Load(*config)
-	if err == nil && *details {
-		err = addDetails(&cfg, stderr)
-	}
-	if err == nil {
-		err = cfg.Generate(*out)
+		_, err = fmt.Fprintln(stdout, buildVersion())
+	default:
+		var cfg vanitypages.Config
+		cfg, err = vanitypages.Load(*config)
+		if err == nil && *details {
+			err = addDetails(&cfg, stderr)
+		}
+		if err == nil {
+			err = cfg.Generate(*out)
+		}
+		if err == nil {
+			_, err = fmt.Fprintf(stdout, "generated %s with %d modules in %s\n", cfg.Domain, len(cfg.Modules), *out)
+		}
 	}
 	if err != nil {
-		fmt.Fprintf(stderr, "vanitypages: %v\n", err)
+		_, _ = fmt.Fprintf(stderr, "vanitypages: %v\n", err)
 		return 1
 	}
-	fmt.Fprintf(stdout, "generated %s with %d modules in %s\n", cfg.Domain, len(cfg.Modules), *out)
 	return 0
 }
 
@@ -70,7 +72,7 @@ func addDetails(cfg *vanitypages.Config, stderr io.Writer) error {
 	defer cancel()
 	details, err := cfg.FetchDetails(ctx)
 	if err != nil {
-		fmt.Fprintf(stderr, "vanitypages: warning: details are incomplete: %v\n", err)
+		_, _ = fmt.Fprintf(stderr, "vanitypages: warning: details are incomplete: %v\n", err)
 	}
 	cfg.Details = details
 	return nil

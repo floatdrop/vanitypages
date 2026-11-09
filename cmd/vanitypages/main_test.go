@@ -26,10 +26,14 @@ func writeDocsConfig(t *testing.T, docs string) string {
 func TestRunDetails(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /v1/package/example.com/m", func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, `{"modulePath":"example.com/m","version":"v1.2.3"}`)
+		if _, err := io.WriteString(w, `{"modulePath":"example.com/m","version":"v1.2.3"}`); err != nil {
+			t.Error(err)
+		}
 	})
 	mux.HandleFunc("GET /v1/module/example.com/m", func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, `{"commitTime":"2026-03-16T17:32:55Z"}`)
+		if _, err := io.WriteString(w, `{"commitTime":"2026-03-16T17:32:55Z"}`); err != nil {
+			t.Error(err)
+		}
 	})
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
@@ -129,5 +133,30 @@ func TestRunPrintsSchema(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), "draft-07") {
 		t.Errorf("stdout = %q", stdout.String())
+	}
+}
+
+type failingWriter struct{}
+
+func (failingWriter) Write([]byte) (int, error) {
+	return 0, io.ErrClosedPipe
+}
+
+func TestRunReportsOutputErrors(t *testing.T) {
+	for name, args := range map[string][]string{
+		"schema":  {"-schema"},
+		"version": {"-version"},
+		"generate": {"-config", writeDocsConfig(t, "https://pkg.go.dev"),
+			"-out", filepath.Join(t.TempDir(), "site")},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var stderr bytes.Buffer
+			if code := run(args, failingWriter{}, &stderr); code != 1 {
+				t.Errorf("exit %d, want 1", code)
+			}
+			if !strings.Contains(stderr.String(), io.ErrClosedPipe.Error()) {
+				t.Errorf("stderr = %q, want output error", stderr.String())
+			}
+		})
 	}
 }

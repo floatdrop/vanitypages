@@ -1,5 +1,7 @@
 # vanitypages
 
+[![CI](https://github.com/floatdrop/vanitypages/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/floatdrop/vanitypages/actions/workflows/test.yml)
+
 Generates a static site of Go vanity import pages, built with
 [Gravity UI](https://gravity-ui.com) and styled after go.dev. Host the output
 anywhere that serves static files, and `go get your.domain/module` resolves to
