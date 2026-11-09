@@ -160,7 +160,7 @@ type indexPage struct {
 }
 
 func (s site) indexPage(modules []Module) indexPage {
-	page := indexPage{Site: s, Crumbs: []crumb{{Label: s.Title}}}
+	page := indexPage{Site: s, Crumbs: []crumb{{Label: s.Title, Heading: true}}}
 	for _, m := range modules {
 		if m.Hidden {
 			continue
@@ -235,7 +235,7 @@ type packagePage struct {
 	Repo        string // repository URL without its scheme
 	RepoHref    string // repository URL, if browsers can open it
 	VCSBadge    string
-	Crumbs      []crumb // ancestors, starting at the site root
+	Crumbs      []crumb // full breadcrumb trail, starting at the site root
 	Current     string  // page heading: the path relative to its parent crumb
 	Submodules  []childLink
 	Packages    []childLink
@@ -243,11 +243,11 @@ type packagePage struct {
 	path string // site-relative directory
 }
 
-// crumb is a header item: a link to an ancestor or, without Href, the heading
-// of the current page.
+// crumb is a header item: a link to an ancestor or, without Href, the current page.
 type crumb struct {
-	Label string
-	Href  string
+	Label   string
+	Href    string
+	Heading bool // the index title also serves as the page heading
 }
 
 type childLink struct {
@@ -400,6 +400,8 @@ func appendPackages(specs []pageSpec, s site, owner, sourceDir string, trail []c
 func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 	importPath := s.Domain + "/" + spec.path
 	last := len(spec.trail) - 1
+	crumbs := slices.Clone(spec.trail)
+	crumbs[last].Href = ""
 	install := s.Domain + "/" + cmp.Or(spec.install, spec.path)
 	browse := repo.browse(cmp.Or(spec.browsePath, spec.path))
 	detail := s.details[install]
@@ -418,7 +420,7 @@ func (s site) packagePage(repo repository, spec pageSpec) packagePage {
 		Repo:        repo.display,
 		RepoHref:    repo.href,
 		VCSBadge:    repo.badge,
-		Crumbs:      spec.trail[:last],
+		Crumbs:      crumbs,
 		Current:     spec.trail[last].Label,
 		path:        spec.path,
 	}

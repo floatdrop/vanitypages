@@ -182,9 +182,13 @@ func elementText(t *testing.T, html []byte, tag string) string {
 	return strings.Join(strings.Fields(htmlTag.ReplaceAllString("<"+tag+inner, " ")), " ")
 }
 
-func TestHeadingsAreNotRepeated(t *testing.T) {
+func TestBreadcrumbsIncludeCurrentPage(t *testing.T) {
 	titled := exampleConfig()
 	titled.Title = "Acme"
+	versioned := exampleConfig()
+	versioned.Modules[0].Versions = []string{"v2"}
+	prefixed := exampleConfig()
+	prefixed.Domain = "example.com/go"
 
 	tests := []struct {
 		name     string
@@ -195,10 +199,15 @@ func TestHeadingsAreNotRepeated(t *testing.T) {
 	}{
 		{"index", exampleConfig(), "index.html", "go.example.com", "go.example.com"},
 		{"titled index", titled, "index.html", "Acme", "Acme"},
-		{"module", exampleConfig(), "cache/index.html", "go.example.com", "cache"},
-		{"package", exampleConfig(), "cache/lru/index.html", "go.example.com / cache", "lru"},
-		{"submodule", exampleConfig(), "cache/contrib/redis/index.html", "go.example.com / cache", "contrib/redis"},
-		{"submodule package", exampleConfig(), "cache/contrib/redis/cluster/index.html", "go.example.com / cache / contrib/redis", "cluster"},
+		{"module", exampleConfig(), "cache/index.html", "go.example.com / cache", "cache"},
+		{"package", exampleConfig(), "cache/lru/index.html", "go.example.com / cache / lru", "lru"},
+		{"submodule", exampleConfig(), "cache/contrib/redis/index.html", "go.example.com / cache / contrib/redis", "contrib/redis"},
+		{"submodule package", exampleConfig(), "cache/contrib/redis/cluster/index.html", "go.example.com / cache / contrib/redis / cluster", "cluster"},
+		{"versioned module root", versioned, "cache/index.html", "go.example.com / cache", "cache"},
+		{"major version", versioned, "cache/v2/index.html", "go.example.com / cache / v2", "v2"},
+		{"versioned package", versioned, "cache/v2/lru/index.html", "go.example.com / cache / v2 / lru", "lru"},
+		{"versioned submodule package", versioned, "cache/contrib/redis/cluster/index.html", "go.example.com / cache / contrib/redis / cluster", "cluster"},
+		{"domain with path", prefixed, "cache/contrib/redis/cluster/index.html", "example.com/go / cache / contrib/redis / cluster", "cluster"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -211,6 +220,26 @@ func TestHeadingsAreNotRepeated(t *testing.T) {
 			}
 			if got := elementText(t, files[tt.file], "h1"); got != tt.wantHead {
 				t.Errorf("heading = %q, want %q", got, tt.wantHead)
+			}
+			page := string(files[tt.file])
+			if got := strings.Count(page, "<h1"); got != 1 {
+				t.Errorf("page has %d h1 elements, want 1", got)
+			}
+			_, nav, _ := strings.Cut(page, "<nav ")
+			nav, _, _ = strings.Cut(nav, "</nav>")
+			tag := "span"
+			if tt.file == "index.html" {
+				tag = "h1"
+			}
+			current := "<" + tag + ` aria-current="page">` + tt.wantHead + "</" + tag + ">"
+			if !strings.Contains(nav, current) {
+				t.Errorf("breadcrumb is missing non-linked current page %q", current)
+			}
+			if got := strings.Count(nav, `aria-current="page"`); got != 1 {
+				t.Errorf("breadcrumb has %d current items, want 1", got)
+			}
+			if got, want := strings.Count(nav, "<a "), len(strings.Split(tt.wantNav, " / ")); got != want {
+				t.Errorf("breadcrumb has %d links, want %d (brand and ancestors)", got, want)
 			}
 		})
 	}
