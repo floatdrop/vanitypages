@@ -644,16 +644,6 @@ func TestGenerateWritesNothingWhenInvalid(t *testing.T) {
 	}
 }
 
-func TestRepositoryConfig(t *testing.T) {
-	cfg, err := Load("vanitypages.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := cfg.Render(); err != nil {
-		t.Fatal(err)
-	}
-}
-
 // TestSchemaMatchesConfig keeps the JSON Schema in step with the Go types.
 func TestSchemaMatchesConfig(t *testing.T) {
 	var doc struct {

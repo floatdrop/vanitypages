@@ -187,16 +187,11 @@ scheduled workflows after 60 days without repository activity.
 Any other static host works too: run `vanitypages` and upload `public/`. The host
 has to serve `index.html` for directory URLs.
 
-This repository publishes its own site the same way.
-
 ## Third-party assets
 
 Generated sites include Gravity UI styles and icons (MIT), with licenses at
 `/-/THIRD_PARTY_LICENSES.txt`. To update them, change the versions in
 `internal/assets/vendor.sh` and run it.
-
-`yandex.png` is the Yandex logo, used by this repository's own site. It is not
-covered by the MIT license.
 
 ## License
 
