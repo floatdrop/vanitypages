@@ -1,6 +1,7 @@
 # vanitypages
 
 [![CI](https://github.com/floatdrop/vanitypages/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/floatdrop/vanitypages/actions/workflows/test.yml)
+[![Awesome Go](https://raw.githubusercontent.com/floatdrop/awesome-go/main/badges/floatdrop--vanitypages.svg)](https://floatdrop.github.io/awesome-go/#floatdrop--vanitypages)
 
 Generates a static site of Go vanity import pages, built with
 [Gravity UI](https://gravity-ui.com) and styled after go.dev. Host the output
