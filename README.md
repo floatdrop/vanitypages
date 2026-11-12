@@ -6,7 +6,7 @@
 Generates a static site of Go vanity import pages, built with
 [Gravity UI](https://gravity-ui.com) and styled after go.dev. Host the output
 anywhere that serves static files, and `go get your.domain/module` resolves to
-your repository.
+your repository. You can also serve the site directly from a Go HTTP server.
 
 ## Gallery
 
@@ -129,6 +129,78 @@ if err := site.Generate("public"); err != nil {
 `Config.Render` returns the files in memory instead, and `vanitypages.Load`
 reads a JSON config file. Assign the result of `Config.FetchDetails` to
 `Config.Details` to get what `-details` adds.
+
+### HTTP server with chi
+
+`Config.Handler` returns a standard `http.Handler`, so no router-specific bridge
+is needed. Add vanitypages and chi to your application's Go module:
+
+```sh
+go get github.com/floatdrop/vanitypages github.com/go-chi/chi/v5
+```
+
+Save this as `main.go`:
+
+```go
+package main
+
+import (
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/floatdrop/vanitypages"
+	"github.com/go-chi/chi/v5"
+)
+
+func main() {
+	site := vanitypages.Config{
+		Domain: "go.example.com",
+		Modules: []vanitypages.Module{{
+			Path: "cache",
+			Repo: "https://github.com/acme/cache",
+		}},
+	}
+	pages, err := site.Handler()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r := chi.NewRouter()
+	r.Get("/api/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+	r.Mount("/", pages)
+
+	server := &http.Server{
+		Addr:              ":8080",
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+	log.Fatal(server.ListenAndServe())
+}
+```
+
+Run `go run .`, then open `http://localhost:8080/` or inspect a module's metadata:
+
+```sh
+curl 'http://localhost:8080/cache/?go-get=1'
+```
+
+The handler validates and renders the site once at startup, including CSS,
+JavaScript and any configured icon. It writes no files, makes no network
+requests and supports GET and HEAD. Module pages include the `go-import`
+metadata used by the Go command, also when requested with `?go-get=1`.
+Unknown paths return 404, just as with the static output. Create a new handler
+when the config or details change.
+
+For `Domain: "example.com/go"`, mount with `r.Mount("/go", pages)` instead.
+The handler already includes `/go` in its routes, so **do not strip the prefix**.
+The same handler works with `net/http` and other routers; chi is not a dependency
+of vanitypages.
+
+In production, serve HTTPS on the configured domain, for example through a
+reverse proxy to this server. The default Go module lookup requires HTTPS.
 
 ## Deployment
 

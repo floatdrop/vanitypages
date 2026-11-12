@@ -1,5 +1,5 @@
-// Package vanitypages generates static vanity import pages for Go modules,
-// styled with the Gravity UI design system.
+// Package vanitypages generates and serves static vanity import pages for Go
+// modules, styled with the Gravity UI design system.
 //
 // Describe a site with a [Config], either in Go or in a JSON file read by
 // [Load], then call [Config.Generate] to write it to a directory:
@@ -11,6 +11,9 @@
 //		},
 //	}
 //	err := site.Generate("public")
+//
+// To serve the site from memory with net/http or another router, use
+// [Config.Handler] instead.
 package vanitypages
 
 import (
@@ -142,7 +145,8 @@ func Load(path string) (Config, error) {
 }
 
 // Parse decodes a JSON config, rejecting unknown fields. It does not check the
-// values; [Config.Validate], [Config.Render] and [Config.Generate] do.
+// values; [Config.Validate], [Config.Render], [Config.Generate] and
+// [Config.Handler] do.
 func Parse(data []byte) (Config, error) {
 	var c Config
 	if err := json.Unmarshal(data, &c, json.RejectUnknownMembers(true)); err != nil {
