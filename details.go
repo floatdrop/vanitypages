@@ -2,8 +2,9 @@ package vanitypages
 
 import (
 	"context"
-	"encoding/json/v2"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"slices"
@@ -104,7 +105,11 @@ func (s site) getJSON(ctx context.Context, endpoint string, query url.Values, v 
 	defer func() { _ = resp.Body.Close() }()
 	switch resp.StatusCode {
 	case http.StatusOK:
-		if err := json.UnmarshalRead(resp.Body, v); err != nil {
+		data, err := io.ReadAll(resp.Body)
+		if err == nil {
+			err = json.Unmarshal(data, v)
+		}
+		if err != nil {
 			return false, fmt.Errorf("decode %s: %w", req.URL, err)
 		}
 		return true, nil

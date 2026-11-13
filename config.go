@@ -17,9 +17,11 @@
 package vanitypages
 
 import (
-	"encoding/json/v2"
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -149,8 +151,13 @@ func Load(path string) (Config, error) {
 // [Config.Handler] do.
 func Parse(data []byte) (Config, error) {
 	var c Config
-	if err := json.Unmarshal(data, &c, json.RejectUnknownMembers(true)); err != nil {
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&c); err != nil {
 		return Config{}, err
+	}
+	if err := decoder.Decode(new(any)); err != io.EOF {
+		return Config{}, errors.New("unexpected data after JSON config")
 	}
 	return c, nil
 }

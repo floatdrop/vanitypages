@@ -19,6 +19,8 @@ your repository. You can also serve the site directly from a Go HTTP server.
 
 ## Usage
 
+Requires Go 1.26 or newer.
+
 ```sh
 go install github.com/floatdrop/vanitypages/cmd/vanitypages@latest
 ```

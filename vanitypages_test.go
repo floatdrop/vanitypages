@@ -1,7 +1,7 @@
 package vanitypages
 
 import (
-	"encoding/json/v2"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"html"
@@ -686,15 +686,39 @@ func TestValidateReportsAllProblems(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	cfg, err := Parse([]byte(`{"$schema":"x","domain":"example.com","modules":[{"path":"m","repo":"https://a.dev/m"}]}`))
+	cfg, err := Parse([]byte(" \n\t" + `{"$schema":"x","domain":"example.com","modules":[{"path":"m","repo":"https://a.dev/m"}]}` + "\r\n\t "))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if cfg.Schema != "x" || cfg.Domain != "example.com" || cfg.Modules[0].Path != "m" {
 		t.Errorf("Parse = %+v", cfg)
 	}
-	if _, err := Parse([]byte(`{"domain":"example.com","moduels":[]}`)); err == nil {
-		t.Error("Parse accepted an unknown field")
+}
+
+func TestParseRejectsInvalidJSON(t *testing.T) {
+	for name, data := range map[string]string{
+		"empty":              "",
+		"malformed":          `{"domain":`,
+		"wrong type":         `{"domain":42}`,
+		"unknown config":     `{"domain":"example.com","moduels":[]}`,
+		"unknown module":     `{"modules":[{"path":"m","extra":true}]}`,
+		"unknown submodule":  `{"modules":[{"submodules":[{"path":"sub","extra":true}]}]}`,
+		"unknown source":     `{"modules":[{"source":{"home":"https://example.com","extra":true}}]}`,
+		"runtime details":    `{"details":{}}`,
+		"trailing object":    `{"domain":"example.com"} {}`,
+		"trailing null":      `{"domain":"example.com"} null`,
+		"trailing data":      `{"domain":"example.com"} invalid`,
+		"invalid whitespace": "{\"domain\":\"example.com\"}\u00a0",
+	} {
+		t.Run(name, func(t *testing.T) {
+			cfg, err := Parse([]byte(data))
+			if err == nil {
+				t.Fatal("Parse accepted invalid JSON")
+			}
+			if !reflect.DeepEqual(cfg, Config{}) {
+				t.Errorf("Parse returned a partial config on error: %+v", cfg)
+			}
+		})
 	}
 }
 

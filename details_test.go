@@ -1,6 +1,7 @@
 package vanitypages
 
 import (
+	"errors"
 	"io"
 	"maps"
 	"net/http"
@@ -46,10 +47,10 @@ func sameDetail(a, b Detail) bool {
 
 func TestFetchDetails(t *testing.T) {
 	srv := fakeDocs(t, map[string]string{
-		"go.example.com/cache/v2":     `{"modulePath":"go.example.com/cache/v2","version":"v2.1.0","synopsis":"Package cache caches.","licenses":[{"types":["MIT"]},{"types":["MIT","Apache-2.0"]}]}`,
+		"go.example.com/cache/v2":     `{"modulePath":"go.example.com/cache/v2","version":"v2.1.0","synopsis":"Package cache caches.","licenses":[{"types":["MIT"]},{"types":["MIT","Apache-2.0"]}],"extra":true}` + "\n\t ",
 		"go.example.com/cache/v2/lru": `{"modulePath":"go.example.com/cache/v2","version":"v2.1.0","synopsis":"Package lru evicts."}`,
 	}, map[string]string{
-		"go.example.com/cache/v2": `{"commitTime":"2026-03-16T17:32:55Z"}`,
+		"go.example.com/cache/v2": `{"commitTime":"2026-03-16T17:32:55Z","extra":true}` + "\n\t ",
 	})
 	c := Config{
 		Domain: "go.example.com",
@@ -77,7 +78,12 @@ func TestFetchDetails(t *testing.T) {
 }
 
 func TestFetchDetailsKeepsResultsOnFailure(t *testing.T) {
-	for name, failure := range map[string]string{"server error": "", "invalid response": "<html>"} {
+	for name, failure := range map[string]string{
+		"server error":     "",
+		"invalid response": "<html>",
+		"trailing JSON":    `{"modulePath":"go.example.com/b","version":"v1.0.0"} {}`,
+		"trailing data":    `{"modulePath":"go.example.com/b","version":"v1.0.0"} invalid`,
+	} {
 		t.Run(name, func(t *testing.T) {
 			srv := fakeDocs(t, map[string]string{
 				"go.example.com/a": `{"modulePath":"go.example.com/a","version":"v1.0.0"}`,
@@ -101,6 +107,26 @@ func TestFetchDetailsKeepsResultsOnFailure(t *testing.T) {
 				t.Errorf("details = %+v, want %+v", got, want)
 			}
 		})
+	}
+}
+
+func TestFetchDetailsReadFailure(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Length", "1000")
+		if _, err := io.WriteString(w, `{"modulePath":"go.example.com/cache","version":"v1.0.0"}`); err != nil {
+			t.Error(err)
+		}
+	}))
+	t.Cleanup(srv.Close)
+	cfg := exampleConfig()
+	cfg.Docs = srv.URL
+
+	got, err := cfg.FetchDetails(t.Context())
+	if !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Fatalf("FetchDetails error = %v, want unexpected EOF", err)
+	}
+	if len(got) != 0 {
+		t.Errorf("FetchDetails returned details from an incomplete response: %+v", got)
 	}
 }
 
